@@ -1,17 +1,29 @@
-import { mkdirSync, readFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { userInfo } from 'node:os'
 import path from 'node:path'
 import type { BrowserWindow, OpenDialogOptions } from 'electron'
-import { dialog, ipcMain, safeStorage } from 'electron'
+import { dialog, ipcMain, safeStorage, shell } from 'electron'
 import { PRODUCT_NAME } from '@genoffice/i18n'
 import { SmbBackend } from '../backends/smb'
 import { WebdavBackend } from '../backends/webdav'
 import { NAS_SYNC_CHANNELS } from '../channels'
 import { syncOnce } from '../engine'
+import { authorizationFromHook, createBearerHook } from '../entra/bearer'
+import { entraBuildDefaults, parseScopes, resolveEntraConfig, signInScopes } from '../entra/config'
+import { entraErrorCode } from '../entra/login-url'
+import { createMsalClient } from '../entra/msal-client'
+import {
+  applyAccountUsername,
+  conflictUserName,
+  parseStoredAccount,
+  serializeAccount,
+  type MicrosoftProfile,
+} from '../entra/profile'
+import { signInWithMicrosoft } from '../entra/sign-in'
 import type { NasSyncSaveResult, NasSyncSnapshot } from '../public'
 import { SyncScheduler } from '../scheduler'
-import { readPasswordFile, writePasswordFile } from '../secret-file'
-import { loadSettings, normalizeSettings, saveSettings } from '../settings'
+import { readPasswordFile, writePasswordFile, writeSealedString } from '../secret-file'
+import { defaultSettings, loadSettings, normalizeSettings, saveSettings } from '../settings'
 import { loadState, saveState } from '../state'
 import type { NasSettings, SyncBackend, SyncStatus } from '../types'
 
@@ -48,6 +60,14 @@ function secretPath(): string {
   return path.join(dir(), 'secret.bin')
 }
 
+function accountPath(): string {
+  return path.join(dir(), 'account.bin')
+}
+
+function cachePath(): string {
+  return path.join(dir(), 'msal-cache.bin')
+}
+
 function fallbackWorkspace(): string {
   if (!deps) return ''
   return path.join(deps.documentsDir, PRODUCT_NAME)
@@ -61,21 +81,44 @@ function hasPassword(): boolean {
   }
 }
 
+function encryptionReady(): boolean {
+  try {
+    return safeStorage.isEncryptionAvailable()
+  } catch {
+    return false
+  }
+}
+
+function seal(plain: string): Buffer {
+  if (!encryptionReady()) throw new Error('keychain-unavailable')
+  return safeStorage.encryptString(plain)
+}
+
+function unseal(blob: Buffer): string {
+  return safeStorage.decryptString(blob)
+}
+
+function loadAccount(): MicrosoftProfile | null {
+  return parseStoredAccount(readPasswordFile(accountPath(), unseal))
+}
+
 function snapshot(): NasSyncSnapshot {
-  const settings = deps
-    ? loadSettings(settingsPath(), fallbackWorkspace())
-    : {
-        enabled: false,
-        backend: 'smb' as const,
-        smbPath: '',
-        smbUrl: '',
-        webdavUrl: '',
-        username: '',
-        intervalMinutes: 15,
-        workspacePath: '',
-        allowInsecureTls: false,
-      }
-  return { settings, hasPassword: hasPassword(), status }
+  const settings = deps ? loadSettings(settingsPath(), fallbackWorkspace()) : defaultSettings('')
+  const account = deps ? loadAccount() : null
+  return {
+    settings,
+    hasPassword: hasPassword(),
+    status,
+    account: account
+      ? {
+          displayName: account.displayName,
+          email: account.email,
+          upn: account.upn,
+          samAccountName: account.samAccountName,
+        }
+      : null,
+    entraDefaults: entraBuildDefaults(),
+  }
 }
 
 function broadcast(): void {
@@ -84,15 +127,31 @@ function broadcast(): void {
   win.webContents.send(NAS_SYNC_CHANNELS.status, snapshot())
 }
 
+function silentAccessToken(settings: NasSettings, scopes: string[]): Promise<string | null> {
+  const config = resolveEntraConfig(settings)
+  if (!config || !encryptionReady()) return Promise.resolve(null)
+  const client = createMsalClient({
+    ...config,
+    loadCache: () => readPasswordFile(cachePath(), unseal),
+    storeCache: (serialized) => writeSealedString(cachePath(), serialized, seal),
+  })
+  return client.acquireSilent(scopes)
+}
+
 function backendFor(settings: NasSettings, password: string): SyncBackend {
   if (settings.backend === 'smb') {
     return new SmbBackend({ mountPath: settings.smbPath, smbUrl: settings.smbUrl })
   }
+  const bearer = settings.webdavAuth === 'bearer'
+  const scopes = parseScopes(settings.webdavScope) ?? []
   return new WebdavBackend({
     url: settings.webdavUrl,
     username: settings.username,
     password,
     allowInsecureTls: settings.allowInsecureTls,
+    authorization: bearer
+      ? authorizationFromHook(createBearerHook(() => silentAccessToken(settings, scopes)))
+      : undefined,
   })
 }
 
@@ -106,8 +165,8 @@ async function runOnce(): Promise<{
   if (!settings.enabled)
     return { phase: 'disabled', conflictCount: status.conflictCount, error: null }
   mkdirSync(settings.workspacePath, { recursive: true })
-  const password = readPasswordFile(secretPath(), (blob) => safeStorage.decryptString(blob))
-  const user = settings.username || userInfo().username || 'user'
+  const password = readPasswordFile(secretPath(), unseal)
+  const user = conflictUserName(settings, loadAccount(), userInfo().username || '')
   const previous = loadState(statePath())
   const result = await syncOnce({
     localRoot: settings.workspacePath,
@@ -125,6 +184,8 @@ function wireIpc(): void {
   ipcMain.removeHandler(NAS_SYNC_CHANNELS.save)
   ipcMain.removeHandler(NAS_SYNC_CHANNELS.syncNow)
   ipcMain.removeHandler(NAS_SYNC_CHANNELS.pickWorkspace)
+  ipcMain.removeHandler(NAS_SYNC_CHANNELS.signIn)
+  ipcMain.removeHandler(NAS_SYNC_CHANNELS.signOut)
   ipcMain.removeAllListeners(NAS_SYNC_CHANNELS.network)
 
   ipcMain.handle(NAS_SYNC_CHANNELS.get, (): NasSyncSnapshot => snapshot())
@@ -144,8 +205,12 @@ function wireIpc(): void {
         return { ok: false, error: 'keychain-unavailable', snapshot: snapshot() }
       }
     }
-    saveSettings(settingsPath(), normalized.settings)
-    if (normalized.settings.enabled) scheduler?.start()
+    const account = loadAccount()
+    const settings = account
+      ? applyAccountUsername(normalized.settings, account)
+      : normalized.settings
+    saveSettings(settingsPath(), settings)
+    if (settings.enabled) scheduler?.start()
     else {
       status = { ...status, phase: 'disabled', pending: false }
       scheduler?.stop()
@@ -169,6 +234,42 @@ function wireIpc(): void {
         : await dialog.showOpenDialog(options)
     if (picked.canceled || !picked.filePaths[0]) return null
     return picked.filePaths[0]
+  })
+
+  ipcMain.handle(NAS_SYNC_CHANNELS.signIn, async (): Promise<NasSyncSaveResult> => {
+    if (!deps) return { ok: false, error: 'entra-failed', snapshot: snapshot() }
+    if (!encryptionReady())
+      return { ok: false, error: 'keychain-unavailable', snapshot: snapshot() }
+    const settings = loadSettings(settingsPath(), fallbackWorkspace())
+    const config = resolveEntraConfig(settings)
+    if (!config) return { ok: false, error: 'entra-config', snapshot: snapshot() }
+    try {
+      const client = createMsalClient({
+        ...config,
+        loadCache: () => readPasswordFile(cachePath(), unseal),
+        storeCache: (serialized) => writeSealedString(cachePath(), serialized, seal),
+      })
+      const profile = await signInWithMicrosoft({
+        client,
+        openExternal: (url) => shell.openExternal(url),
+        bearerScopes: signInScopes(settings),
+      })
+      writeSealedString(accountPath(), serializeAccount(profile), seal)
+      saveSettings(settingsPath(), applyAccountUsername(settings, profile))
+      broadcast()
+      return { ok: true, snapshot: snapshot() }
+    } catch (error) {
+      return { ok: false, error: entraErrorCode(error), snapshot: snapshot() }
+    }
+  })
+
+  ipcMain.handle(NAS_SYNC_CHANNELS.signOut, (): NasSyncSnapshot => {
+    if (deps) {
+      rmSync(accountPath(), { force: true })
+      rmSync(cachePath(), { force: true })
+    }
+    broadcast()
+    return snapshot()
   })
 
   ipcMain.on(NAS_SYNC_CHANNELS.network, (_event, online: unknown) => {
@@ -211,6 +312,8 @@ export function stopForkNasSync(): void {
   ipcMain.removeHandler(NAS_SYNC_CHANNELS.save)
   ipcMain.removeHandler(NAS_SYNC_CHANNELS.syncNow)
   ipcMain.removeHandler(NAS_SYNC_CHANNELS.pickWorkspace)
+  ipcMain.removeHandler(NAS_SYNC_CHANNELS.signIn)
+  ipcMain.removeHandler(NAS_SYNC_CHANNELS.signOut)
   ipcMain.removeAllListeners(NAS_SYNC_CHANNELS.network)
   deps = null
 }

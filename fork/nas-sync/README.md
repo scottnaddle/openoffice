@@ -5,8 +5,10 @@ Documents stay in a folder on this computer. A background pass mirrors that fold
 This folder is not part of upstream. Keep the engine, the settings screen, the wording, and these notes here. The shell only imports the host, the settings screen, and the status chip.
 
 - SMB uses a folder macOS has mounted, usually `/Volumes/<share>`. If you also set an `smb://` address with no password in it, a missing mount is opened with `/usr/bin/open`.
-- WebDAV uses HTTPS and Basic authentication. The client is the TypeScript in `src/backends/webdav.ts`. It does not add a native module.
-- The password is sealed with Electron `safeStorage` (macOS Keychain). `settings.json` has no password field.
+- WebDAV uses HTTPS. The usual mode is Basic authentication. If the NAS accepts an Entra access token, a bearer hook can send it instead. The client is the TypeScript in `src/backends/webdav.ts`.
+- The NAS password and the Microsoft token cache are sealed with Electron `safeStorage` (macOS Keychain). `settings.json` has neither.
+- Microsoft sign-in is optional. It uses `@azure/msal-node` (public client, authorization code, PKCE, the system browser, and a loopback redirect). Skipping it leaves NAS sync unchanged.
+- The signed-in name and email are shown in the app. The NAS user name defaults to the account UPN, or to sAMAccountName when that option is selected. Conflict file names use that user name.
 - Sync state (last hash, size, and mtime for each file) is `state.json` under the app's `nas-sync` directory.
 - A content conflict keeps the local bytes at the original name and writes the other bytes to `name (conflict - <user> <date>).ext` on both sides.
 - A deletion moves the file into `.nas-sync-trash`. It is not unlinked. A deletion does not discard an edit on the other side.

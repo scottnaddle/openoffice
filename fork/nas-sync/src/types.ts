@@ -79,6 +79,9 @@ export interface SyncStatus {
   pending: boolean
 }
 
+export type NasNameKind = 'upn' | 'sam'
+export type WebdavAuthKind = 'basic' | 'bearer'
+
 export interface NasSettings {
   enabled: boolean
   backend: BackendKind
@@ -86,7 +89,15 @@ export interface NasSettings {
   smbUrl: string
   webdavUrl: string
   username: string
+  /** When true, sign-in replaces `username` with the Microsoft account name. */
+  usernameFollowsAccount: boolean
   intervalMinutes: number
   workspacePath: string
   allowInsecureTls: boolean
+  entraTenantId: string
+  entraClientId: string
+  nasNameKind: NasNameKind
+  webdavAuth: WebdavAuthKind
+  /** Scope for the optional WebDAV bearer hook. Empty when WebDAV uses a password. */
+  webdavScope: string
 }

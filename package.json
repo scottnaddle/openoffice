@@ -43,6 +43,7 @@
     "dist:linux": "npm run notices && npm run build:all && npm run dist:linux -w @genoffice/shell"
   },
   "dependencies": {
+    "@azure/msal-node": "^3.8.10",
     "ws": "^8.21.1"
   },
   "overrides": {

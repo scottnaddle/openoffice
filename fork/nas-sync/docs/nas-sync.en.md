@@ -79,4 +79,71 @@ Office lock files (`~$...`), LibreOffice lock files, names ending in `.tmp`, `.l
 
 A file larger than 256 MB is left in place and the status says sync needs attention.
 
+## Microsoft 365 sign-in (optional)
+
+Skip this if the NAS has its own user names. The app still syncs.
+
+Sign-in is for a company whose NAS accounts are the same Microsoft 365 / Entra ID accounts. The NAS model is still unknown, so the app does not guess how the NAS is joined.
+
+What the app does:
+
+- Public client. Authorization code with PKCE. No client secret.
+- The system browser opens the Microsoft login page. The reply comes back to `http://localhost` on a free port (MSAL's loopback server).
+- The only scope required for the name and email is Microsoft Graph `User.Read`.
+- Tokens are sealed with the macOS Keychain (`safeStorage`). They are not written into `settings.json`.
+- Settings shows the signed-in name and email. The home sidebar shows them too.
+- The NAS user name is filled from the UPN (`ada@contoso.com`). Choose **Windows account name** to use `sAMAccountName` when the directory has one. If it does not, the part before `@` is used. Conflict files use that name: `name (conflict - ada@contoso.com date).ext`.
+- You can type a different NAS user name. That choice is kept.
+- Sign out deletes the token cache on this Mac. It does not delete the NAS password. The browser may still have a Microsoft session.
+
+### What IT registers
+
+1. In the Microsoft Entra admin center, open **App registrations** and create a registration.
+2. Supported accounts: this organization, unless IT wants another choice (`organizations` is the usual tenant value; a tenant GUID is finer).
+3. Redirect URI: platform **Mobile and desktop applications**, URI `http://localhost`. The port is chosen at sign-in. Do not put a password or a secret in the URI.
+4. Copy the **Application (client) ID** and the **Directory (tenant) ID** into Settings. A packaged build can also bake them in with `NAS_SYNC_ENTRA_TENANT_ID` and `NAS_SYNC_ENTRA_CLIENT_ID`. Values typed in Settings win.
+5. Turn on public client flows. Do not create a client secret.
+6. API permissions: Microsoft Graph, delegated, `User.Read`. Grant admin consent if the tenant requires it.
+
+### Passwords and tokens
+
+SMB and most WebDAV servers cannot take an Entra access token.
+
+**(a) Directory user name and password.** This is the path that works with a NAS joined to the same accounts.
+
+- User name: the UPN or the sAMAccountName, already filled in.
+- Password: the directory password, typed once in the app. It is stored in the macOS Keychain and sent only as WebDAV Basic authentication.
+- The Microsoft password itself never reaches the app. The browser collects it.
+- SMB on this Mac is a mounted folder. The app does not put the password in the `smb://` address. When macOS asks, use the same user name. macOS can store that password in the login keychain.
+
+**(b) OAuth bearer token, only if the NAS WebDAV server accepts one.**
+
+- Set **WebDAV authentication** to **OAuth bearer token** and enter the scope IT gives you.
+- The app asks MSAL for a silent access token for that scope and sends `Authorization: Bearer ...` only to the WebDAV URL in Settings.
+- The extension point is `WebdavBearerHook` in `src/entra/bearer.ts`. The default hook is that silent MSAL token. A different hook can be passed to `authorizationFromHook`.
+- SMB still cannot use the token.
+
+### Joining Synology, QNAP, or another NAS
+
+The goal is that the same UPN or sAMAccountName and the same directory password open the share.
+
+**Synology**
+
+- Control Panel, **Domain/LDAP** (or **Domain**).
+- Azure AD Domain Services (Entra Domain Services): join the NAS to that managed domain. Users then sign in with the UPN or the sAMAccountName from the domain.
+- LDAP: if the company publishes LDAP (Azure AD DS secure LDAP, or another directory that mirrors Entra), bind Synology to that LDAP server.
+- A Synology share does not accept a raw Entra token for SMB.
+
+**QNAP**
+
+- Control Panel, **Privilege**, **Domain Security** (wording varies by QTS).
+- Join the Azure AD DS managed domain, or an Active Directory domain that is synced from Entra.
+- LDAP: the same page, **LDAP**, using the company's LDAP address.
+- QNAP SMB and ordinary WebDAV then use those directory accounts.
+
+**Other NAS**
+
+- Join it to Active Directory, to Azure AD Domain Services, or to the company LDAP.
+- Confirm a person can open the share with the UPN or sAMAccountName and the directory password before turning sync on.
+
 If the size and modification time match the last sync, the file is not read again.

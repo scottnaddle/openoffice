@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Lang } from '@genoffice/i18n'
-import type { NasSyncSnapshot } from '../src/public'
-import type { NasSettings, SyncStatus } from '../src/types'
+import { nasLoginName } from '../src/entra/profile'
+import type { MicrosoftAccountView, NasSyncSnapshot } from '../src/public'
+import type { NasNameKind, NasSettings, SyncStatus, WebdavAuthKind } from '../src/types'
 import { nasCopy } from './strings'
 import './nas-sync.css'
 
@@ -11,6 +12,10 @@ function messageFor(code: string | undefined, text: ReturnType<typeof nasCopy>):
   if (code === 'bad-url') return text.badUrl
   if (code === 'bad-smb-url') return text.badSmb
   if (code === 'paths-overlap') return text.overlap
+  if (code === 'entra-config') return text.entraConfig
+  if (code === 'entra-cancelled') return text.entraCancelled
+  if (code === 'bearer-scope') return text.webdavScopeHint
+  if (code === 'entra-failed') return text.entraFailed
   return text.error
 }
 
@@ -20,6 +25,8 @@ export function NasSyncSettings({ lang }: { lang: Lang }) {
   const [draft, setDraft] = useState<NasSettings | null>(null)
   const [hasPassword, setHasPassword] = useState(false)
   const [status, setStatus] = useState<SyncStatus | null>(null)
+  const [account, setAccount] = useState<MicrosoftAccountView | null>(null)
+  const [defaults, setDefaults] = useState({ tenantId: '', clientId: '' })
   const [password, setPassword] = useState('')
   const [note, setNote] = useState('')
   const [noteError, setNoteError] = useState(false)
@@ -34,11 +41,14 @@ export function NasSyncSettings({ lang }: { lang: Lang }) {
       setDraft(next.settings)
       setHasPassword(next.hasPassword)
       setStatus(next.status)
+      setAccount(next.account)
+      setDefaults(next.entraDefaults)
     })
     const off = api.onStatus((next) => {
       if (!alive) return
       setStatus(next.status)
       setHasPassword(next.hasPassword)
+      setAccount(next.account)
     })
     return () => {
       alive = false
@@ -66,6 +76,7 @@ export function NasSyncSettings({ lang }: { lang: Lang }) {
         return
       }
       setDraft(result.snapshot.settings)
+      setAccount(result.snapshot.account)
       setPassword('')
       setNote(text.saved)
       if (andSync) {
@@ -78,6 +89,50 @@ export function NasSyncSettings({ lang }: { lang: Lang }) {
     } finally {
       setBusy(false)
     }
+  }
+
+  const signIn = async () => {
+    const api = window.ieumNasSync
+    if (!api) return
+    setBusy(true)
+    setNote('')
+    setNoteError(false)
+    try {
+      const saved = await api.save({ ...draft, password: password || undefined })
+      setHasPassword(saved.snapshot.hasPassword)
+      setAccount(saved.snapshot.account)
+      if (!saved.ok) {
+        setNote(messageFor(saved.error, text))
+        setNoteError(true)
+        return
+      }
+      setDraft(saved.snapshot.settings)
+      setPassword('')
+      const signed = await api.signIn()
+      setDraft(signed.snapshot.settings)
+      setAccount(signed.snapshot.account)
+      setHasPassword(signed.snapshot.hasPassword)
+      if (!signed.ok) {
+        setNote(messageFor(signed.error, text))
+        setNoteError(true)
+        return
+      }
+      setNote(text.saved)
+    } catch {
+      setNote(text.entraFailed)
+      setNoteError(true)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const signOut = async () => {
+    const api = window.ieumNasSync
+    if (!api) return
+    const next = await api.signOut()
+    setAccount(next.account)
+    setDraft(next.settings)
+    setStatus(next.status)
   }
 
   const pickWorkspace = async () => {
@@ -104,6 +159,93 @@ export function NasSyncSettings({ lang }: { lang: Lang }) {
           aria-label={text.enable}
           onClick={() => patch({ enabled: !draft.enabled })}
         />
+      </div>
+      <div className="set-field set-field-top">
+        <div className="set-field-text">
+          <div className="set-field-stack">
+            <div className="set-field-label">{text.microsoftTitle}</div>
+            <div className="set-field-desc">{text.microsoftIntro}</div>
+            {account ? (
+              <div className="nas-sync-account">
+                <strong>
+                  {text.microsoftName}: {account.displayName}
+                </strong>
+                <span>
+                  {text.microsoftEmail}: {account.email}
+                </span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+        {account ? (
+          <button type="button" className="set-btn" disabled={busy} onClick={() => void signOut()}>
+            {text.microsoftSignOut}
+          </button>
+        ) : (
+          <button type="button" className="set-btn" disabled={busy} onClick={() => void signIn()}>
+            {text.microsoftSignIn}
+          </button>
+        )}
+      </div>
+      <div className="set-field">
+        <div className="set-field-text">
+          <div className="set-field-stack">
+            <label className="set-field-label" htmlFor="nas-tenant">
+              {text.tenantId}
+            </label>
+            <div className="set-field-desc">{text.tenantHint}</div>
+          </div>
+        </div>
+        <input
+          id="nas-tenant"
+          className="set-input"
+          value={draft.entraTenantId}
+          placeholder={defaults.tenantId}
+          autoComplete="off"
+          onChange={(event) => patch({ entraTenantId: event.target.value })}
+        />
+      </div>
+      <div className="set-field">
+        <div className="set-field-text">
+          <div className="set-field-stack">
+            <label className="set-field-label" htmlFor="nas-client">
+              {text.clientId}
+            </label>
+            <div className="set-field-desc">{text.clientHint}</div>
+          </div>
+        </div>
+        <input
+          id="nas-client"
+          className="set-input"
+          value={draft.entraClientId}
+          placeholder={defaults.clientId}
+          autoComplete="off"
+          onChange={(event) => patch({ entraClientId: event.target.value })}
+        />
+      </div>
+      <div className="set-field">
+        <div className="set-field-text">
+          <label className="set-field-label" htmlFor="nas-name-kind">
+            {text.nasNameKind}
+          </label>
+          <div className="set-field-desc">{text.nasNameHint}</div>
+        </div>
+        <select
+          id="nas-name-kind"
+          className="set-input"
+          value={draft.nasNameKind}
+          onChange={(event) => {
+            const nasNameKind: NasNameKind = event.target.value === 'sam' ? 'sam' : 'upn'
+            const next: Partial<NasSettings> = { nasNameKind }
+            if (draft.usernameFollowsAccount && account) {
+              next.username = nasLoginName(account, nasNameKind)
+            }
+            patch(next)
+          }}
+        >
+          <option value="upn">{text.nasNameUpn}</option>
+          <option value="sam">{text.nasNameSam}</option>
+        </select>
       </div>
       <div className="set-field">
         <div className="set-field-text">
@@ -176,6 +318,47 @@ export function NasSyncSettings({ lang }: { lang: Lang }) {
               onChange={(event) => patch({ webdavUrl: event.target.value })}
             />
           </div>
+          <div className="set-field">
+            <div className="set-field-text">
+              <label className="set-field-label" htmlFor="nas-webdav-auth">
+                {text.webdavAuth}
+              </label>
+            </div>
+            <select
+              id="nas-webdav-auth"
+              className="set-input"
+              value={draft.webdavAuth}
+              onChange={(event) =>
+                patch({
+                  webdavAuth: (event.target.value === 'bearer'
+                    ? 'bearer'
+                    : 'basic') as WebdavAuthKind,
+                })
+              }
+            >
+              <option value="basic">{text.webdavBasic}</option>
+              <option value="bearer">{text.webdavBearer}</option>
+            </select>
+          </div>
+          {draft.webdavAuth === 'bearer' ? (
+            <div className="set-field set-field-top">
+              <div className="set-field-text">
+                <div className="set-field-stack">
+                  <label className="set-field-label" htmlFor="nas-scope">
+                    {text.webdavScope}
+                  </label>
+                  <div className="set-field-desc">{text.webdavScopeHint}</div>
+                </div>
+              </div>
+              <input
+                id="nas-scope"
+                className="set-input"
+                value={draft.webdavScope}
+                autoComplete="off"
+                onChange={(event) => patch({ webdavScope: event.target.value })}
+              />
+            </div>
+          ) : null}
           <div className="set-field set-field-top">
             <div className="set-field-text">
               <div className="set-field-stack">
@@ -205,9 +388,30 @@ export function NasSyncSettings({ lang }: { lang: Lang }) {
           className="set-input"
           value={draft.username}
           autoComplete="off"
-          onChange={(event) => patch({ username: event.target.value })}
+          onChange={(event) =>
+            patch({ username: event.target.value, usernameFollowsAccount: false })
+          }
         />
       </div>
+      {account ? (
+        <div className="set-field">
+          <div className="set-field-text">
+            <div className="set-field-desc">{text.passwordStillNeeded}</div>
+          </div>
+          <button
+            type="button"
+            className="set-btn"
+            onClick={() =>
+              patch({
+                username: nasLoginName(account, draft.nasNameKind),
+                usernameFollowsAccount: true,
+              })
+            }
+          >
+            {text.useAccountName}
+          </button>
+        </div>
+      ) : null}
       <div className="set-field set-field-top">
         <div className="set-field-text">
           <div className="set-field-stack">

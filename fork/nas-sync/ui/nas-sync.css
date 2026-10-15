@@ -61,3 +61,15 @@
 .nas-sync-note.error {
   color: var(--danger);
 }
+
+.nas-sync-account {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nas-sync-account strong {
+  color: var(--text);
+  font-weight: 600;
+}

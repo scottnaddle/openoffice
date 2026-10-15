@@ -6,4 +6,6 @@ export const NAS_SYNC_CHANNELS = {
   pickWorkspace: 'fork:nas-sync:pick-workspace',
   network: 'fork:nas-sync:network',
   status: 'fork:nas-sync:status',
+  signIn: 'fork:nas-sync:sign-in',
+  signOut: 'fork:nas-sync:sign-out',
 } as const

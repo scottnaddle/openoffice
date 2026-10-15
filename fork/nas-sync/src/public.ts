@@ -1,10 +1,19 @@
 import type { NasSettings, SyncStatus } from './types'
 
-/** What the window is allowed to see. The password is never included. */
+/** Shown in the window. Tokens and the NAS password are never included. */
+export interface MicrosoftAccountView {
+  displayName: string
+  email: string
+  upn: string
+  samAccountName: string
+}
+
 export interface NasSyncSnapshot {
   settings: NasSettings
   hasPassword: boolean
   status: SyncStatus
+  account: MicrosoftAccountView | null
+  entraDefaults: { tenantId: string; clientId: string }
 }
 
 export interface NasSyncSaveResult {
@@ -18,6 +27,8 @@ export interface NasSyncApi {
   save(input: unknown): Promise<NasSyncSaveResult>
   syncNow(): Promise<NasSyncSnapshot>
   pickWorkspace(): Promise<string | null>
+  signIn(): Promise<NasSyncSaveResult>
+  signOut(): Promise<NasSyncSnapshot>
   notifyNetwork(online: boolean): void
   onStatus(listener: (snapshot: NasSyncSnapshot) => void): () => void
 }

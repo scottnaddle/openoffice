@@ -614,6 +614,8 @@ const nasSyncApi: NasSyncApi = {
     const picked: unknown = await ipcRenderer.invoke(NAS_SYNC_CHANNELS.pickWorkspace)
     return typeof picked === 'string' ? picked : null
   },
+  signIn: () => ipcRenderer.invoke(NAS_SYNC_CHANNELS.signIn),
+  signOut: () => ipcRenderer.invoke(NAS_SYNC_CHANNELS.signOut) as Promise<NasSyncSnapshot>,
   notifyNetwork(online) {
     ipcRenderer.send(NAS_SYNC_CHANNELS.network, online)
   },

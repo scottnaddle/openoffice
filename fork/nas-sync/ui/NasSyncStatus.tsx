@@ -59,12 +59,19 @@ export function NasSyncStatus({ lang }: { lang: Lang }) {
     }
   }, [])
 
-  if (!snapshot?.settings.enabled) return null
+  if (!snapshot || (!snapshot.settings.enabled && !snapshot.account)) return null
   const view = labelFor(snapshot.status, text)
   return (
     <div className="nas-sync-status" role="status" aria-live="polite">
-      <span className={`nas-sync-dot ${view.kind}`} />
-      <span>{view.label}</span>
+      <span className={`nas-sync-dot ${snapshot.settings.enabled ? view.kind : 'idle'}`} />
+      <span className="nas-sync-account">
+        {snapshot.settings.enabled ? <span>{view.label}</span> : null}
+        {snapshot.account ? (
+          <span>
+            {snapshot.account.displayName} · {snapshot.account.email}
+          </span>
+        ) : null}
+      </span>
     </div>
   )
 }

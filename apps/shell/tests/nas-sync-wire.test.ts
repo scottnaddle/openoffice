@@ -7,6 +7,7 @@ const main = readFileSync(join(root, 'src/main/index.ts'), 'utf8')
 const host = readFileSync(join(root, '../../fork/nas-sync/src/electron/host.ts'), 'utf8')
 const settings = readFileSync(join(root, 'src/renderer/src/SettingsModal.tsx'), 'utf8')
 const home = readFileSync(join(root, 'src/renderer/src/Home.tsx'), 'utf8')
+const preload = readFileSync(join(root, 'src/preload/index.ts'), 'utf8')
 
 describe('fork NAS sync wiring', () => {
   it('starts only on the windowed path and stops when the app quits', () => {
@@ -22,8 +23,13 @@ describe('fork NAS sync wiring', () => {
   it('keeps the password in safeStorage and out of the settings snapshot', () => {
     expect(host).toContain('safeStorage.encryptString')
     expect(host).toContain('safeStorage.isEncryptionAvailable')
+    expect(host).toContain('createMsalClient')
+    expect(host).toContain('writeSealedString')
+    expect(host).toContain('shell.openExternal')
     expect(host).not.toContain('ai-settings.json')
     expect(host).not.toContain('auth.json')
+    expect(preload).toContain('NAS_SYNC_CHANNELS.signIn')
+    expect(preload).toContain('NAS_SYNC_CHANNELS.signOut')
     expect(settings).toContain('<NasSyncSettings lang={lang} />')
     expect(home).toContain('<NasSyncStatus lang={lang} />')
   })

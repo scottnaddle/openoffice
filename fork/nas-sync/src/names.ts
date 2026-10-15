@@ -2,10 +2,10 @@
 
 export function sanitizeUser(user: string): string {
   const cleaned = user
-    .replace(/[^\p{L}\p{N}._-]+/gu, ' ')
+    .replace(/[^\p{L}\p{N}._@+-]+/gu, ' ')
     .trim()
     .replace(/\s+/g, ' ')
-    .slice(0, 32)
+    .slice(0, 64)
   return cleaned || 'user'
 }
 

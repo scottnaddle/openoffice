@@ -1,9 +1,10 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { randomBytes } from 'node:crypto'
+import { clientIdAllowed, parseScopes, tenantIdAllowed } from './entra/config'
 import { smbUrlAllowed, webdavUrlAllowed } from './mount'
 import { pathsOverlap } from './paths'
-import type { NasSettings } from './types'
+import type { NasNameKind, NasSettings, WebdavAuthKind } from './types'
 
 export function defaultSettings(workspacePath: string): NasSettings {
   return {
@@ -13,9 +14,15 @@ export function defaultSettings(workspacePath: string): NasSettings {
     smbUrl: '',
     webdavUrl: '',
     username: '',
+    usernameFollowsAccount: true,
     intervalMinutes: 15,
     workspacePath,
     allowInsecureTls: false,
+    entraTenantId: '',
+    entraClientId: '',
+    nasNameKind: 'upn',
+    webdavAuth: 'basic',
+    webdavScope: '',
   }
 }
 
@@ -34,7 +41,9 @@ export function loadSettings(file: string, workspacePath: string): NasSettings {
 export function saveSettings(file: string, settings: NasSettings): void {
   mkdirSync(dirname(file), { recursive: true })
   const body = JSON.stringify(settings, null, 2)
-  if (body.includes('"password"')) throw new Error('password-in-settings')
+  if (/"password"|"accessToken"|"refreshToken"|"idToken"/.test(body)) {
+    throw new Error('password-in-settings')
+  }
   const tmp = `${file}.${randomBytes(4).toString('hex')}.nas-sync-tmp`
   writeFileSync(tmp, body)
   renameSync(tmp, file)
@@ -52,9 +61,16 @@ export function normalizeSettings(input: unknown, fallbackWorkspace: string): No
   const smbPath = asPath(raw.smbPath)
   const smbUrl = asText(raw.smbUrl, 512)
   const webdavUrl = asText(raw.webdavUrl, 512)
-  const username = asText(raw.username, 64)
+  const username = asText(raw.username, 256)
   const workspacePath = asPath(raw.workspacePath) || fallbackWorkspace
   const allowInsecureTls = raw.allowInsecureTls === true
+  const entraTenantId = asText(raw.entraTenantId, 253)
+  const entraClientId = asText(raw.entraClientId, 64)
+  const nasNameKind: NasNameKind = raw.nasNameKind === 'sam' ? 'sam' : 'upn'
+  const webdavAuth: WebdavAuthKind = raw.webdavAuth === 'bearer' ? 'bearer' : 'basic'
+  const webdavScope = asText(raw.webdavScope, 512)
+  const usernameFollowsAccount =
+    raw.usernameFollowsAccount === true || (raw.usernameFollowsAccount !== false && !username)
   const intervalMinutes = asInterval(raw.intervalMinutes)
   if (intervalMinutes === null) return { ok: false, error: 'bad-interval' }
   if (smbUrl && !smbUrlAllowed(smbUrl)) return { ok: false, error: 'bad-smb-url' }
@@ -66,6 +82,12 @@ export function normalizeSettings(input: unknown, fallbackWorkspace: string): No
   if (enabled && backend === 'smb' && !smbPath) return { ok: false, error: 'smb-path' }
   if (enabled && backend === 'webdav' && !webdavUrl) return { ok: false, error: 'bad-url' }
   if (enabled && !workspacePath) return { ok: false, error: 'bad-path' }
+  if (entraTenantId && !tenantIdAllowed(entraTenantId)) return { ok: false, error: 'entra-config' }
+  if (entraClientId && !clientIdAllowed(entraClientId)) return { ok: false, error: 'entra-config' }
+  if (webdavScope && parseScopes(webdavScope) === null) return { ok: false, error: 'bearer-scope' }
+  if (enabled && backend === 'webdav' && webdavAuth === 'bearer' && !webdavScope) {
+    return { ok: false, error: 'bearer-scope' }
+  }
 
   let password: string | undefined
   if (typeof raw.password === 'string') {
@@ -85,9 +107,15 @@ export function normalizeSettings(input: unknown, fallbackWorkspace: string): No
       smbUrl,
       webdavUrl,
       username,
+      usernameFollowsAccount,
       intervalMinutes,
       workspacePath,
       allowInsecureTls,
+      entraTenantId,
+      entraClientId,
+      nasNameKind,
+      webdavAuth,
+      webdavScope,
     },
   }
 }

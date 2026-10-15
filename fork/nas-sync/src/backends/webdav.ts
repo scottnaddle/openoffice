@@ -25,6 +25,8 @@ export class WebdavBackend implements SyncBackend {
       username: string
       password: string
       allowInsecureTls: boolean
+      /** When set, used instead of Basic. The bearer hook returns the header value. */
+      authorization?: () => Promise<string>
       transport?: HttpTransport
     },
   ) {
@@ -38,7 +40,8 @@ export class WebdavBackend implements SyncBackend {
       if (response.status >= 200 && response.status < 300) return { ok: true }
       if (response.status === 207) return { ok: true }
       return { ok: false, reason: 'error' }
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.message === 'auth') return { ok: false, reason: 'auth' }
       return { ok: false, reason: 'offline' }
     }
   }
@@ -118,14 +121,16 @@ export class WebdavBackend implements SyncBackend {
     throw new Error('io')
   }
 
-  private call(
+  private async call(
     method: string,
     rel: string,
     body?: Buffer | string,
     extra?: Record<string, string>,
   ): Promise<HttpResponse> {
     const headers: Record<string, string> = {
-      Authorization: basicAuthHeader(this.opts.username, this.opts.password),
+      Authorization: this.opts.authorization
+        ? await this.opts.authorization()
+        : basicAuthHeader(this.opts.username, this.opts.password),
       ...extra,
     }
     const payload = typeof body === 'string' ? Buffer.from(body, 'utf8') : body

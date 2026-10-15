@@ -36,6 +36,32 @@ const zh = {
   error: '同步需要处理',
   idle: '等待同步',
   offlineConflicts: 'NAS 离线 · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro: '可选。使用公司的 Microsoft 账户登录。不登录也可以同步 NAS。',
+  microsoftSignIn: '使用 Microsoft 登录',
+  microsoftSignOut: '退出登录',
+  microsoftName: '姓名',
+  microsoftEmail: '电子邮件',
+  tenantId: '目录（租户）ID',
+  clientId: '应用程序（客户端）ID',
+  tenantHint: '来自 Entra 应用注册。打包时也可以设置 NAS_SYNC_ENTRA_TENANT_ID。',
+  clientHint: '同一应用的公共客户端 ID。打包时也可以设置 NAS_SYNC_ENTRA_CLIENT_ID。',
+  nasNameKind: '发给 NAS 的用户名',
+  nasNameUpn: 'Microsoft 用户名（user@company）',
+  nasNameSam: 'Windows 账户名（sAMAccountName）',
+  nasNameHint: '从已登录的账户填入。仍可改成其他名字。',
+  useAccountName: '使用 Microsoft 账户名',
+  webdavAuth: 'WebDAV 身份验证',
+  webdavBasic: '用户名和密码',
+  webdavBearer: 'OAuth 持有者令牌',
+  webdavScope: '令牌范围',
+  webdavScopeHint:
+    '仅当 NAS 接受 Entra 访问令牌时填写。向 IT 询问范围。SMB 和多数 NAS 仍使用钥匙串中的密码。',
+  entraConfig: '登录前请填写租户 ID 和客户端 ID。',
+  entraFailed: 'Microsoft 登录没有完成。',
+  entraCancelled: '已取消登录。',
+  passwordStillNeeded:
+    'SMB 和基于密码的 WebDAV 仍需要把 NAS 密码放进钥匙串。Microsoft 令牌不会发给这些共享。',
 }
 
 export type NasCopy = Record<keyof typeof zh, string>
@@ -78,6 +104,35 @@ const en = {
   error: 'Sync needs attention',
   idle: 'Waiting to sync',
   offlineConflicts: 'NAS offline · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'Optional. Sign in with the company Microsoft account. NAS sync still works if you skip this.',
+  microsoftSignIn: 'Sign in with Microsoft',
+  microsoftSignOut: 'Sign out',
+  microsoftName: 'Name',
+  microsoftEmail: 'Email',
+  tenantId: 'Directory (tenant) ID',
+  clientId: 'Application (client) ID',
+  tenantHint:
+    'From the Entra app registration. A packaged build can also set NAS_SYNC_ENTRA_TENANT_ID.',
+  clientHint:
+    'Public client ID from the same app. A packaged build can also set NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'Name sent to the NAS',
+  nasNameUpn: 'Microsoft user name (user@company)',
+  nasNameSam: 'Windows account name (sAMAccountName)',
+  nasNameHint: 'Filled in from the signed-in account. You can still type a different name.',
+  useAccountName: 'Use the Microsoft account name',
+  webdavAuth: 'WebDAV authentication',
+  webdavBasic: 'User name and password',
+  webdavBearer: 'OAuth bearer token',
+  webdavScope: 'Token scope',
+  webdavScopeHint:
+    'Only if the NAS accepts an Entra access token. Ask IT for the scope. SMB and most NAS shares still use the password in the Keychain.',
+  entraConfig: 'Add the tenant ID and client ID before signing in.',
+  entraFailed: 'Microsoft sign-in did not finish.',
+  entraCancelled: 'Sign-in was cancelled.',
+  passwordStillNeeded:
+    'SMB and password-based WebDAV still need the NAS password in the Keychain. The Microsoft token is not sent to those shares.',
 } satisfies NasCopy
 
 const ja = {
@@ -118,6 +173,35 @@ const ja = {
   error: '同期の確認が必要です',
   idle: '同期待ち',
   offlineConflicts: 'NAS オフライン · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    '任意です。会社の Microsoft アカウントでサインインします。サインインしなくても NAS 同期は使えます。',
+  microsoftSignIn: 'Microsoft でサインイン',
+  microsoftSignOut: 'サインアウト',
+  microsoftName: '名前',
+  microsoftEmail: 'メール',
+  tenantId: 'ディレクトリ (テナント) ID',
+  clientId: 'アプリケーション (クライアント) ID',
+  tenantHint:
+    'Entra アプリの登録にあります。ビルド時に NAS_SYNC_ENTRA_TENANT_ID でも指定できます。',
+  clientHint:
+    '同じアプリのパブリック クライアント ID です。ビルド時に NAS_SYNC_ENTRA_CLIENT_ID でも指定できます。',
+  nasNameKind: 'NAS に送る名前',
+  nasNameUpn: 'Microsoft のユーザー名 (user@company)',
+  nasNameSam: 'Windows アカウント名 (sAMAccountName)',
+  nasNameHint: 'サインインしたアカウントから入ります。別の名前に変えても構いません。',
+  useAccountName: 'Microsoft アカウント名を使う',
+  webdavAuth: 'WebDAV の認証',
+  webdavBasic: 'ユーザー名とパスワード',
+  webdavBearer: 'OAuth ベアラ トークン',
+  webdavScope: 'トークンのスコープ',
+  webdavScopeHint:
+    'NAS が Entra のアクセス トークンを受け取る場合だけ記入します。スコープは IT に確認してください。SMB と多くの NAS はキーチェーンのパスワードを使います。',
+  entraConfig: 'サインインの前にテナント ID とクライアント ID を入力してください。',
+  entraFailed: 'Microsoft のサインインが完了しませんでした。',
+  entraCancelled: 'サインインを取り消しました。',
+  passwordStillNeeded:
+    'SMB とパスワード方式の WebDAV には、NAS のパスワードをキーチェーンに保存する必要があります。Microsoft のトークンはそれらの共有には送りません。',
 } satisfies NasCopy
 
 const ko = {
@@ -156,6 +240,34 @@ const ko = {
   error: '동기화를 확인해야 합니다',
   idle: '동기화 대기',
   offlineConflicts: 'NAS 오프라인 · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    '선택 사항입니다. 회사 Microsoft 계정으로 로그인합니다. 로그인하지 않아도 NAS 동기화는 됩니다.',
+  microsoftSignIn: 'Microsoft로 로그인',
+  microsoftSignOut: '로그아웃',
+  microsoftName: '이름',
+  microsoftEmail: '메일',
+  tenantId: '디렉터리(테넌트) ID',
+  clientId: '애플리케이션(클라이언트) ID',
+  tenantHint: 'Entra 앱 등록에 있습니다. 빌드할 때 NAS_SYNC_ENTRA_TENANT_ID 로도 넣을 수 있습니다.',
+  clientHint:
+    '같은 앱의 공개 클라이언트 ID입니다. 빌드할 때 NAS_SYNC_ENTRA_CLIENT_ID 로도 넣을 수 있습니다.',
+  nasNameKind: 'NAS에 보낼 이름',
+  nasNameUpn: 'Microsoft 사용자 이름 (user@company)',
+  nasNameSam: 'Windows 계정 이름 (sAMAccountName)',
+  nasNameHint: '로그인한 계정에서 채웁니다. 다른 이름으로 바꿔도 됩니다.',
+  useAccountName: 'Microsoft 계정 이름 사용',
+  webdavAuth: 'WebDAV 인증',
+  webdavBasic: '사용자 이름과 암호',
+  webdavBearer: 'OAuth 전달자 토큰',
+  webdavScope: '토큰 범위',
+  webdavScopeHint:
+    'NAS가 Entra 액세스 토큰을 받을 때만 적습니다. 범위는 IT에 문의하세요. SMB와 대부분의 NAS는 키체인의 암호를 씁니다.',
+  entraConfig: '로그인하기 전에 테넌트 ID와 클라이언트 ID를 적으세요.',
+  entraFailed: 'Microsoft 로그인이 끝나지 않았습니다.',
+  entraCancelled: '로그인을 취소했습니다.',
+  passwordStillNeeded:
+    'SMB와 암호 방식 WebDAV는 NAS 암호를 키체인에 넣어야 합니다. Microsoft 토큰은 그 공유로 보내지 않습니다.',
 } satisfies NasCopy
 
 const fr = {
@@ -197,6 +309,35 @@ const fr = {
   error: 'La synchronisation demande une vérification',
   idle: 'En attente',
   offlineConflicts: 'NAS hors ligne · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    "Facultatif. Connectez-vous avec le compte Microsoft de l'entreprise. La synchro NAS fonctionne aussi sans connexion.",
+  microsoftSignIn: 'Se connecter avec Microsoft',
+  microsoftSignOut: 'Se déconnecter',
+  microsoftName: 'Nom',
+  microsoftEmail: 'Adresse e-mail',
+  tenantId: "ID d'annuaire (locataire)",
+  clientId: "ID d'application (client)",
+  tenantHint:
+    "Indiqué dans l'inscription de l'application Entra. Une version compilée peut aussi définir NAS_SYNC_ENTRA_TENANT_ID.",
+  clientHint:
+    'ID de client public de la même application. Une version compilée peut aussi définir NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'Nom envoyé au NAS',
+  nasNameUpn: "Nom d'utilisateur Microsoft (user@company)",
+  nasNameSam: 'Nom de compte Windows (sAMAccountName)',
+  nasNameHint: 'Rempli à partir du compte connecté. Vous pouvez saisir un autre nom.',
+  useAccountName: 'Utiliser le nom du compte Microsoft',
+  webdavAuth: 'Authentification WebDAV',
+  webdavBasic: "Nom d'utilisateur et mot de passe",
+  webdavBearer: 'Jeton porteur OAuth',
+  webdavScope: 'Étendue du jeton',
+  webdavScopeHint:
+    "À remplir seulement si le NAS accepte un jeton d'accès Entra. Demandez l'étendue au service informatique. SMB et la plupart des NAS utilisent encore le mot de passe du Trousseau.",
+  entraConfig: "Indiquez l'ID de locataire et l'ID client avant de vous connecter.",
+  entraFailed: 'La connexion Microsoft ne s’est pas terminée.',
+  entraCancelled: 'Connexion annulée.',
+  passwordStillNeeded:
+    "SMB et WebDAV par mot de passe exigent le mot de passe du NAS dans le Trousseau. Le jeton Microsoft n'est pas envoyé à ces partages.",
 } satisfies NasCopy
 
 const de = {
@@ -239,6 +380,35 @@ const de = {
   error: 'Sync braucht Aufmerksamkeit',
   idle: 'Wartet auf Sync',
   offlineConflicts: 'NAS offline · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'Optional. Melden Sie sich mit dem Microsoft-Konto der Firma an. Die NAS-Synchronisierung funktioniert auch ohne Anmeldung.',
+  microsoftSignIn: 'Mit Microsoft anmelden',
+  microsoftSignOut: 'Abmelden',
+  microsoftName: 'Name',
+  microsoftEmail: 'E-Mail',
+  tenantId: 'Verzeichnis-ID (Mandant)',
+  clientId: 'Anwendungs-ID (Client)',
+  tenantHint:
+    'Steht in der Entra-App-Registrierung. Ein Build kann auch NAS_SYNC_ENTRA_TENANT_ID setzen.',
+  clientHint:
+    'Öffentliche Client-ID derselben App. Ein Build kann auch NAS_SYNC_ENTRA_CLIENT_ID setzen.',
+  nasNameKind: 'Name für das NAS',
+  nasNameUpn: 'Microsoft-Benutzername (user@company)',
+  nasNameSam: 'Windows-Kontoname (sAMAccountName)',
+  nasNameHint: 'Wird vom angemeldeten Konto übernommen. Ein anderer Name ist möglich.',
+  useAccountName: 'Microsoft-Kontonamen verwenden',
+  webdavAuth: 'WebDAV-Anmeldung',
+  webdavBasic: 'Benutzername und Kennwort',
+  webdavBearer: 'OAuth-Bearer-Token',
+  webdavScope: 'Tokenbereich',
+  webdavScopeHint:
+    'Nur ausfüllen, wenn das NAS ein Entra-Zugriffstoken annimmt. Den Bereich nennt die IT. SMB und die meisten NAS nutzen das Kennwort im Schlüsselbund.',
+  entraConfig: 'Tragen Sie Mandanten-ID und Client-ID ein, bevor Sie sich anmelden.',
+  entraFailed: 'Die Microsoft-Anmeldung wurde nicht abgeschlossen.',
+  entraCancelled: 'Anmeldung abgebrochen.',
+  passwordStillNeeded:
+    'SMB und passwortbasiertes WebDAV brauchen das NAS-Kennwort im Schlüsselbund. Das Microsoft-Token wird an diese Freigaben nicht gesendet.',
 } satisfies NasCopy
 
 const es = {
@@ -280,6 +450,35 @@ const es = {
   error: 'La sincronización necesita atención',
   idle: 'Esperando para sincronizar',
   offlineConflicts: 'NAS sin conexión · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'Opcional. Inicie sesión con la cuenta de Microsoft de la empresa. La sincronización con el NAS también funciona sin iniciar sesión.',
+  microsoftSignIn: 'Iniciar sesión con Microsoft',
+  microsoftSignOut: 'Cerrar sesión',
+  microsoftName: 'Nombre',
+  microsoftEmail: 'Correo',
+  tenantId: 'Id. de directorio (inquilino)',
+  clientId: 'Id. de aplicación (cliente)',
+  tenantHint:
+    'Está en el registro de la aplicación Entra. Una compilación también puede definir NAS_SYNC_ENTRA_TENANT_ID.',
+  clientHint:
+    'Id. de cliente público de la misma aplicación. Una compilación también puede definir NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'Nombre que se envía al NAS',
+  nasNameUpn: 'Nombre de usuario de Microsoft (user@company)',
+  nasNameSam: 'Nombre de cuenta de Windows (sAMAccountName)',
+  nasNameHint: 'Se rellena con la cuenta que ha iniciado sesión. Puede escribir otro nombre.',
+  useAccountName: 'Usar el nombre de la cuenta de Microsoft',
+  webdavAuth: 'Autenticación WebDAV',
+  webdavBasic: 'Nombre de usuario y contraseña',
+  webdavBearer: 'Token de portador OAuth',
+  webdavScope: 'Ámbito del token',
+  webdavScopeHint:
+    'Rellénelo solo si el NAS acepta un token de acceso de Entra. Pida el ámbito a TI. SMB y la mayoría de los NAS siguen usando la contraseña del llavero.',
+  entraConfig: 'Escriba el id. de inquilino y el id. de cliente antes de iniciar sesión.',
+  entraFailed: 'El inicio de sesión de Microsoft no terminó.',
+  entraCancelled: 'Inicio de sesión cancelado.',
+  passwordStillNeeded:
+    'SMB y WebDAV con contraseña necesitan la contraseña del NAS en el llavero. El token de Microsoft no se envía a esos recursos.',
 } satisfies NasCopy
 
 const th = {
@@ -319,6 +518,34 @@ const th = {
   error: 'การซิงก์ต้องได้รับการดูแล',
   idle: 'รอซิงก์',
   offlineConflicts: 'NAS ออฟไลน์ · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'ไม่บังคับ ลงชื่อเข้าใช้ด้วยบัญชี Microsoft ของบริษัท การซิงค์ NAS ยังใช้ได้แม้ไม่ลงชื่อเข้าใช้',
+  microsoftSignIn: 'ลงชื่อเข้าใช้ด้วย Microsoft',
+  microsoftSignOut: 'ลงชื่อออก',
+  microsoftName: 'ชื่อ',
+  microsoftEmail: 'อีเมล',
+  tenantId: 'รหัสไดเรกทอรี (ผู้เช่า)',
+  clientId: 'รหัสแอปพลิเคชัน (ไคลเอ็นต์)',
+  tenantHint: 'อยู่ในหน้าลงทะเบียนแอป Entra ตอนสร้างโปรแกรมสามารถตั้ง NAS_SYNC_ENTRA_TENANT_ID ได้',
+  clientHint:
+    'รหัสไคลเอ็นต์สาธารณะของแอปเดียวกัน ตอนสร้างโปรแกรมสามารถตั้ง NAS_SYNC_ENTRA_CLIENT_ID ได้',
+  nasNameKind: 'ชื่อที่ส่งไปยัง NAS',
+  nasNameUpn: 'ชื่อผู้ใช้ Microsoft (user@company)',
+  nasNameSam: 'ชื่อบัญชี Windows (sAMAccountName)',
+  nasNameHint: 'เติมจากบัญชีที่ลงชื่อเข้าใช้แล้ว ยังเปลี่ยนเป็นชื่ออื่นได้',
+  useAccountName: 'ใช้ชื่อบัญชี Microsoft',
+  webdavAuth: 'การยืนยันตัวตน WebDAV',
+  webdavBasic: 'ชื่อผู้ใช้และรหัสผ่าน',
+  webdavBearer: 'โทเค็นผู้ถือ OAuth',
+  webdavScope: 'ขอบเขตของโทเค็น',
+  webdavScopeHint:
+    'กรอกเมื่อ NAS รับโทเค็นการเข้าถึงของ Entra เท่านั้น ถามขอบเขตจากฝ่ายไอที SMB และ NAS ส่วนใหญ่ยังใช้รหัสผ่านในพวงกุญแจ',
+  entraConfig: 'ใส่รหัสผู้เช่าและรหัสไคลเอ็นต์ก่อนลงชื่อเข้าใช้',
+  entraFailed: 'การลงชื่อเข้าใช้ Microsoft ไม่เสร็จ',
+  entraCancelled: 'ยกเลิกการลงชื่อเข้าใช้แล้ว',
+  passwordStillNeeded:
+    'SMB และ WebDAV แบบรหัสผ่านยังต้องเก็บรหัสผ่าน NAS ไว้ในพวงกุญแจ โทเค็นของ Microsoft จะไม่ถูกส่งไปยังการแชร์เหล่านั้น',
 } satisfies NasCopy
 
 const id = {
@@ -359,6 +586,35 @@ const id = {
   error: 'Sinkronisasi perlu perhatian',
   idle: 'Menunggu sinkronisasi',
   offlineConflicts: 'NAS luring · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'Opsional. Masuk dengan akun Microsoft perusahaan. Sinkronisasi NAS tetap jalan tanpa masuk.',
+  microsoftSignIn: 'Masuk dengan Microsoft',
+  microsoftSignOut: 'Keluar',
+  microsoftName: 'Nama',
+  microsoftEmail: 'Email',
+  tenantId: 'ID direktori (penyewa)',
+  clientId: 'ID aplikasi (klien)',
+  tenantHint:
+    'Ada di pendaftaran aplikasi Entra. Build juga bisa mengatur NAS_SYNC_ENTRA_TENANT_ID.',
+  clientHint:
+    'ID klien publik dari aplikasi yang sama. Build juga bisa mengatur NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'Nama yang dikirim ke NAS',
+  nasNameUpn: 'Nama pengguna Microsoft (user@company)',
+  nasNameSam: 'Nama akun Windows (sAMAccountName)',
+  nasNameHint: 'Diisi dari akun yang masuk. Anda tetap bisa mengetik nama lain.',
+  useAccountName: 'Gunakan nama akun Microsoft',
+  webdavAuth: 'Autentikasi WebDAV',
+  webdavBasic: 'Nama pengguna dan kata sandi',
+  webdavBearer: 'Token pembawa OAuth',
+  webdavScope: 'Cakupan token',
+  webdavScopeHint:
+    'Isi hanya jika NAS menerima token akses Entra. Tanyakan cakupannya ke TI. SMB dan sebagian besar NAS tetap memakai kata sandi di Keychain.',
+  entraConfig: 'Isi ID penyewa dan ID klien sebelum masuk.',
+  entraFailed: 'Masuk Microsoft tidak selesai.',
+  entraCancelled: 'Masuk dibatalkan.',
+  passwordStillNeeded:
+    'SMB dan WebDAV berbasis kata sandi tetap memerlukan kata sandi NAS di Keychain. Token Microsoft tidak dikirim ke berbagi itu.',
 } satisfies NasCopy
 
 const ru = {
@@ -400,6 +656,35 @@ const ru = {
   error: 'Синхронизацию нужно проверить',
   idle: 'Ожидание синхронизации',
   offlineConflicts: 'NAS не в сети · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'Необязательно. Войдите с рабочей учетной записью Microsoft. Синхронизация с NAS работает и без входа.',
+  microsoftSignIn: 'Войти с Microsoft',
+  microsoftSignOut: 'Выйти',
+  microsoftName: 'Имя',
+  microsoftEmail: 'Почта',
+  tenantId: 'Идентификатор каталога (тенанта)',
+  clientId: 'Идентификатор приложения (клиента)',
+  tenantHint:
+    'Указан в регистрации приложения Entra. При сборке можно задать NAS_SYNC_ENTRA_TENANT_ID.',
+  clientHint:
+    'Публичный идентификатор клиента того же приложения. При сборке можно задать NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'Имя для NAS',
+  nasNameUpn: 'Имя пользователя Microsoft (user@company)',
+  nasNameSam: 'Имя учетной записи Windows (sAMAccountName)',
+  nasNameHint: 'Подставляется из вошедшей учетной записи. Можно ввести другое имя.',
+  useAccountName: 'Использовать имя учетной записи Microsoft',
+  webdavAuth: 'Проверка WebDAV',
+  webdavBasic: 'Имя пользователя и пароль',
+  webdavBearer: 'Токен носителя OAuth',
+  webdavScope: 'Область токена',
+  webdavScopeHint:
+    'Заполняйте, только если NAS принимает маркер доступа Entra. Область подскажет ИТ-отдел. SMB и большинство NAS по-прежнему используют пароль из связки ключей.',
+  entraConfig: 'Перед входом укажите идентификатор тенанта и клиента.',
+  entraFailed: 'Вход в Microsoft не завершился.',
+  entraCancelled: 'Вход отменен.',
+  passwordStillNeeded:
+    'Для SMB и WebDAV с паролем пароль NAS должен лежать в связке ключей. Маркер Microsoft на эти ресурсы не отправляется.',
 } satisfies NasCopy
 
 const ar = {
@@ -439,6 +724,33 @@ const ar = {
   error: 'المزامنة تحتاج إلى مراجعة',
   idle: 'بانتظار المزامنة',
   offlineConflicts: 'NAS غير متصل · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'اختياري. سجّل الدخول بحساب Microsoft الخاص بالشركة. تظل مزامنة NAS تعمل من دون تسجيل الدخول.',
+  microsoftSignIn: 'تسجيل الدخول باستخدام Microsoft',
+  microsoftSignOut: 'تسجيل الخروج',
+  microsoftName: 'الاسم',
+  microsoftEmail: 'البريد',
+  tenantId: 'معرف الدليل (المستأجر)',
+  clientId: 'معرف التطبيق (العميل)',
+  tenantHint: 'تجده في تسجيل تطبيق Entra. يمكن للبناء أيضًا ضبط NAS_SYNC_ENTRA_TENANT_ID.',
+  clientHint: 'معرف العميل العام للتطبيق نفسه. يمكن للبناء أيضًا ضبط NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'الاسم المرسل إلى NAS',
+  nasNameUpn: 'اسم مستخدم Microsoft (user@company)',
+  nasNameSam: 'اسم حساب Windows (sAMAccountName)',
+  nasNameHint: 'يُملأ من الحساب الذي سجّل الدخول. يمكنك كتابة اسم آخر.',
+  useAccountName: 'استخدام اسم حساب Microsoft',
+  webdavAuth: 'مصادقة WebDAV',
+  webdavBasic: 'اسم المستخدم وكلمة المرور',
+  webdavBearer: 'رمز حامل OAuth',
+  webdavScope: 'نطاق الرمز',
+  webdavScopeHint:
+    'املأه فقط إذا كان NAS يقبل رمز وصول Entra. اطلب النطاق من تقنية المعلومات. SMB ومعظم أجهزة NAS ما زالت تستخدم كلمة المرور في سلسلة المفاتيح.',
+  entraConfig: 'أدخل معرف المستأجر ومعرف العميل قبل تسجيل الدخول.',
+  entraFailed: 'لم يكتمل تسجيل الدخول إلى Microsoft.',
+  entraCancelled: 'أُلغي تسجيل الدخول.',
+  passwordStillNeeded:
+    'SMB وWebDAV بكلمة مرور يحتاجان إلى كلمة مرور NAS في سلسلة المفاتيح. لا يُرسل رمز Microsoft إلى هذه المشاركات.',
 } satisfies NasCopy
 
 const pt = {
@@ -480,6 +792,35 @@ const pt = {
   error: 'A sincronização precisa de atenção',
   idle: 'À espera de sincronizar',
   offlineConflicts: 'NAS offline · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'Opcional. Entre com a conta Microsoft da empresa. A sincronização com o NAS funciona mesmo sem entrar.',
+  microsoftSignIn: 'Entrar com a Microsoft',
+  microsoftSignOut: 'Sair',
+  microsoftName: 'Nome',
+  microsoftEmail: 'E-mail',
+  tenantId: 'ID do diretório (locatário)',
+  clientId: 'ID do aplicativo (cliente)',
+  tenantHint:
+    'Está no registro do aplicativo Entra. Uma compilação também pode definir NAS_SYNC_ENTRA_TENANT_ID.',
+  clientHint:
+    'ID de cliente público do mesmo aplicativo. Uma compilação também pode definir NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'Nome enviado ao NAS',
+  nasNameUpn: 'Nome de usuário da Microsoft (user@company)',
+  nasNameSam: 'Nome da conta do Windows (sAMAccountName)',
+  nasNameHint: 'Preenchido a partir da conta conectada. Você ainda pode digitar outro nome.',
+  useAccountName: 'Usar o nome da conta Microsoft',
+  webdavAuth: 'Autenticação WebDAV',
+  webdavBasic: 'Nome de usuário e senha',
+  webdavBearer: 'Token de portador OAuth',
+  webdavScope: 'Escopo do token',
+  webdavScopeHint:
+    'Preencha somente se o NAS aceitar um token de acesso do Entra. Peça o escopo à TI. SMB e a maioria dos NAS ainda usam a senha do Keychain.',
+  entraConfig: 'Informe o ID do locatário e o ID do cliente antes de entrar.',
+  entraFailed: 'A entrada na Microsoft não terminou.',
+  entraCancelled: 'Entrada cancelada.',
+  passwordStillNeeded:
+    'SMB e WebDAV com senha ainda precisam da senha do NAS no Keychain. O token da Microsoft não é enviado a esses compartilhamentos.',
 } satisfies NasCopy
 
 const it = {
@@ -520,6 +861,35 @@ const it = {
   error: 'La sincronizzazione richiede attenzione',
   idle: 'In attesa di sincronizzare',
   offlineConflicts: 'NAS offline · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    "Facoltativo. Accedi con l'account Microsoft aziendale. La sincronizzazione NAS funziona anche senza accesso.",
+  microsoftSignIn: 'Accedi con Microsoft',
+  microsoftSignOut: 'Esci',
+  microsoftName: 'Nome',
+  microsoftEmail: 'E-mail',
+  tenantId: 'ID directory (tenant)',
+  clientId: 'ID applicazione (client)',
+  tenantHint:
+    "Si trova nella registrazione dell'app Entra. Una build può anche impostare NAS_SYNC_ENTRA_TENANT_ID.",
+  clientHint:
+    'ID client pubblico della stessa app. Una build può anche impostare NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'Nome inviato al NAS',
+  nasNameUpn: 'Nome utente Microsoft (user@company)',
+  nasNameSam: 'Nome account Windows (sAMAccountName)',
+  nasNameHint: "Compilato dall'account connesso. Puoi comunque scrivere un altro nome.",
+  useAccountName: "Usa il nome dell'account Microsoft",
+  webdavAuth: 'Autenticazione WebDAV',
+  webdavBasic: 'Nome utente e password',
+  webdavBearer: 'Token bearer OAuth',
+  webdavScope: 'Ambito del token',
+  webdavScopeHint:
+    "Compila solo se il NAS accetta un token di accesso Entra. Chiedi l'ambito all'IT. SMB e la maggior parte dei NAS usano ancora la password nel portachiavi.",
+  entraConfig: "Inserisci l'ID tenant e l'ID client prima di accedere.",
+  entraFailed: "L'accesso a Microsoft non è terminato.",
+  entraCancelled: 'Accesso annullato.',
+  passwordStillNeeded:
+    'SMB e WebDAV con password richiedono la password del NAS nel portachiavi. Il token Microsoft non viene inviato a quelle condivisioni.',
 } satisfies NasCopy
 
 const pl = {
@@ -561,6 +931,35 @@ const pl = {
   error: 'Synchronizacja wymaga uwagi',
   idle: 'Oczekiwanie na synchronizację',
   offlineConflicts: 'NAS offline · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'Opcjonalne. Zaloguj się kontem Microsoft firmy. Synchronizacja z NAS działa także bez logowania.',
+  microsoftSignIn: 'Zaloguj się przez Microsoft',
+  microsoftSignOut: 'Wyloguj',
+  microsoftName: 'Imię i nazwisko',
+  microsoftEmail: 'E-mail',
+  tenantId: 'Identyfikator katalogu (dzierżawy)',
+  clientId: 'Identyfikator aplikacji (klienta)',
+  tenantHint:
+    'Jest w rejestracji aplikacji Entra. Kompilacja może też ustawić NAS_SYNC_ENTRA_TENANT_ID.',
+  clientHint:
+    'Publiczny identyfikator klienta tej samej aplikacji. Kompilacja może też ustawić NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'Nazwa wysyłana do NAS',
+  nasNameUpn: 'Nazwa użytkownika Microsoft (user@company)',
+  nasNameSam: 'Nazwa konta Windows (sAMAccountName)',
+  nasNameHint: 'Wypełniana z zalogowanego konta. Możesz wpisać inną nazwę.',
+  useAccountName: 'Użyj nazwy konta Microsoft',
+  webdavAuth: 'Uwierzytelnianie WebDAV',
+  webdavBasic: 'Nazwa użytkownika i hasło',
+  webdavBearer: 'Token nośnika OAuth',
+  webdavScope: 'Zakres tokenu',
+  webdavScopeHint:
+    'Wypełnij tylko wtedy, gdy NAS przyjmuje token dostępu Entra. Zakres poda dział IT. SMB i większość serwerów NAS nadal używa hasła ze pęku kluczy.',
+  entraConfig: 'Przed logowaniem podaj identyfikator dzierżawy i klienta.',
+  entraFailed: 'Logowanie Microsoft nie zostało dokończone.',
+  entraCancelled: 'Logowanie anulowane.',
+  passwordStillNeeded:
+    'SMB i WebDAV z hasłem wymagają hasła NAS w pęku kluczy. Token Microsoft nie jest wysyłany do tych udziałów.',
 } satisfies NasCopy
 
 const cs = {
@@ -601,6 +1000,35 @@ const cs = {
   error: 'Synchronizace potřebuje pozornost',
   idle: 'Čeká na synchronizaci',
   offlineConflicts: 'NAS je offline · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'Volitelné. Přihlaste se firemním účtem Microsoft. Synchronizace s NAS funguje i bez přihlášení.',
+  microsoftSignIn: 'Přihlásit se účtem Microsoft',
+  microsoftSignOut: 'Odhlásit se',
+  microsoftName: 'Jméno',
+  microsoftEmail: 'E-mail',
+  tenantId: 'ID adresáře (tenanta)',
+  clientId: 'ID aplikace (klienta)',
+  tenantHint:
+    'Je v registraci aplikace Entra. Sestavení může také nastavit NAS_SYNC_ENTRA_TENANT_ID.',
+  clientHint:
+    'Veřejné ID klienta stejné aplikace. Sestavení může také nastavit NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'Jméno odesílané na NAS',
+  nasNameUpn: 'Uživatelské jméno Microsoft (user@company)',
+  nasNameSam: 'Název účtu Windows (sAMAccountName)',
+  nasNameHint: 'Doplní se z přihlášeného účtu. Můžete napsat jiné jméno.',
+  useAccountName: 'Použít jméno účtu Microsoft',
+  webdavAuth: 'Ověření WebDAV',
+  webdavBasic: 'Uživatelské jméno a heslo',
+  webdavBearer: 'Nosný token OAuth',
+  webdavScope: 'Obor tokenu',
+  webdavScopeHint:
+    'Vyplňte jen tehdy, když NAS přijímá přístupový token Entra. Obor sdělí IT. SMB a většina NAS dál používá heslo ve svazku klíčů.',
+  entraConfig: 'Před přihlášením zadejte ID tenanta a ID klienta.',
+  entraFailed: 'Přihlášení k Microsoftu se nedokončilo.',
+  entraCancelled: 'Přihlášení bylo zrušeno.',
+  passwordStillNeeded:
+    'SMB a WebDAV s heslem potřebují heslo k NAS ve svazku klíčů. Token Microsoftu se do těchto sdílení neposílá.',
 } satisfies NasCopy
 
 const nl = {
@@ -642,6 +1070,35 @@ const nl = {
   error: 'Synchronisatie heeft aandacht nodig',
   idle: 'Wacht op synchronisatie',
   offlineConflicts: 'NAS offline · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'Optioneel. Meld u aan met het Microsoft-account van het bedrijf. NAS-synchronisatie werkt ook zonder aanmelden.',
+  microsoftSignIn: 'Aanmelden met Microsoft',
+  microsoftSignOut: 'Afmelden',
+  microsoftName: 'Naam',
+  microsoftEmail: 'E-mail',
+  tenantId: 'Map-id (tenant)',
+  clientId: 'Toepassings-id (client)',
+  tenantHint:
+    'Staat in de Entra-appregistratie. Een build kan ook NAS_SYNC_ENTRA_TENANT_ID instellen.',
+  clientHint:
+    'Openbare client-id van dezelfde app. Een build kan ook NAS_SYNC_ENTRA_CLIENT_ID instellen.',
+  nasNameKind: 'Naam naar de NAS',
+  nasNameUpn: 'Microsoft-gebruikersnaam (user@company)',
+  nasNameSam: 'Windows-accountnaam (sAMAccountName)',
+  nasNameHint: 'Ingevuld vanuit het aangemelde account. U kunt een andere naam typen.',
+  useAccountName: 'Microsoft-accountnaam gebruiken',
+  webdavAuth: 'WebDAV-aanmelding',
+  webdavBasic: 'Gebruikersnaam en wachtwoord',
+  webdavBearer: 'OAuth-bearer-token',
+  webdavScope: 'Tokenbereik',
+  webdavScopeHint:
+    'Alleen invullen als de NAS een Entra-toegangstoken accepteert. Vraag het bereik aan IT. SMB en de meeste NAS-apparaten gebruiken nog het wachtwoord in de sleutelhanger.',
+  entraConfig: 'Vul de tenant-id en client-id in voordat u zich aanmeldt.',
+  entraFailed: 'Aanmelden bij Microsoft is niet voltooid.',
+  entraCancelled: 'Aanmelden geannuleerd.',
+  passwordStillNeeded:
+    'SMB en WebDAV met wachtwoord hebben het NAS-wachtwoord in de sleutelhanger nodig. Het Microsoft-token gaat niet naar die shares.',
 } satisfies NasCopy
 
 const ms = {
@@ -682,6 +1139,35 @@ const ms = {
   error: 'Segerakan perlu perhatian',
   idle: 'Menunggu untuk segerak',
   offlineConflicts: 'NAS luar talian · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'Pilihan. Log masuk dengan akaun Microsoft syarikat. Segerak NAS tetap berfungsi tanpa log masuk.',
+  microsoftSignIn: 'Log masuk dengan Microsoft',
+  microsoftSignOut: 'Log keluar',
+  microsoftName: 'Nama',
+  microsoftEmail: 'E-mel',
+  tenantId: 'ID direktori (penyewa)',
+  clientId: 'ID aplikasi (klien)',
+  tenantHint:
+    'Ada dalam pendaftaran aplikasi Entra. Binaan juga boleh menetapkan NAS_SYNC_ENTRA_TENANT_ID.',
+  clientHint:
+    'ID klien awam aplikasi yang sama. Binaan juga boleh menetapkan NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'Nama yang dihantar ke NAS',
+  nasNameUpn: 'Nama pengguna Microsoft (user@company)',
+  nasNameSam: 'Nama akaun Windows (sAMAccountName)',
+  nasNameHint: 'Diisi daripada akaun yang log masuk. Anda masih boleh taip nama lain.',
+  useAccountName: 'Guna nama akaun Microsoft',
+  webdavAuth: 'Pengesahan WebDAV',
+  webdavBasic: 'Nama pengguna dan kata laluan',
+  webdavBearer: 'Token pembawa OAuth',
+  webdavScope: 'Skop token',
+  webdavScopeHint:
+    'Isi hanya jika NAS menerima token akses Entra. Tanya skop kepada IT. SMB dan kebanyakan NAS masih menggunakan kata laluan dalam Keychain.',
+  entraConfig: 'Isi ID penyewa dan ID klien sebelum log masuk.',
+  entraFailed: 'Log masuk Microsoft tidak selesai.',
+  entraCancelled: 'Log masuk dibatalkan.',
+  passwordStillNeeded:
+    'SMB dan WebDAV berasaskan kata laluan masih memerlukan kata laluan NAS dalam Keychain. Token Microsoft tidak dihantar ke perkongsian itu.',
 } satisfies NasCopy
 
 const he = {
@@ -720,6 +1206,32 @@ const he = {
   error: 'הסנכרון דורש תשומת לב',
   idle: 'ממתין לסנכרון',
   offlineConflicts: 'NAS לא מקוון · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro: 'לא חובה. היכנס עם חשבון Microsoft של החברה. סנכרון ה-NAS עובד גם בלי כניסה.',
+  microsoftSignIn: 'כניסה עם Microsoft',
+  microsoftSignOut: 'יציאה',
+  microsoftName: 'שם',
+  microsoftEmail: 'דואר',
+  tenantId: 'מזהה ספרייה (דייר)',
+  clientId: 'מזהה יישום (לקוח)',
+  tenantHint: 'מופיע ברישום היישום ב-Entra. בנייה יכולה גם להגדיר NAS_SYNC_ENTRA_TENANT_ID.',
+  clientHint: 'מזהה לקוח ציבורי של אותו יישום. בנייה יכולה גם להגדיר NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'השם שנשלח ל-NAS',
+  nasNameUpn: 'שם המשתמש ב-Microsoft (user@company)',
+  nasNameSam: 'שם חשבון Windows (sAMAccountName)',
+  nasNameHint: 'מתמלא מהחשבון שנכנס. אפשר עדיין להקליד שם אחר.',
+  useAccountName: 'השתמש בשם חשבון Microsoft',
+  webdavAuth: 'אימות WebDAV',
+  webdavBasic: 'שם משתמש וסיסמה',
+  webdavBearer: 'אסימון נושא OAuth',
+  webdavScope: 'היקף האסימון',
+  webdavScopeHint:
+    'מלא רק אם ה-NAS מקבל אסימון גישה של Entra. בקש את ההיקף מצוות ה-IT. SMB ורוב התקני ה-NAS עדיין משתמשים בסיסמה שבצרור המפתחות.',
+  entraConfig: 'הזן מזהה דייר ומזהה לקוח לפני הכניסה.',
+  entraFailed: 'הכניסה ל-Microsoft לא הושלמה.',
+  entraCancelled: 'הכניסה בוטלה.',
+  passwordStillNeeded:
+    'SMB ו-WebDAV עם סיסמה עדיין צריכים את סיסמת ה-NAS בצרור המפתחות. אסימון Microsoft לא נשלח אל השיתופים האלה.',
 } satisfies NasCopy
 
 const hi = {
@@ -759,6 +1271,33 @@ const hi = {
   error: 'सिंक पर ध्यान देना है',
   idle: 'सिंक की प्रतीक्षा',
   offlineConflicts: 'NAS ऑफ़लाइन · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'वैकल्पिक। कंपनी के Microsoft खाते से साइन इन करें। साइन इन के बिना भी NAS सिंक चलता है।',
+  microsoftSignIn: 'Microsoft से साइन इन करें',
+  microsoftSignOut: 'साइन आउट',
+  microsoftName: 'नाम',
+  microsoftEmail: 'ईमेल',
+  tenantId: 'निर्देशिका (टेनेंट) आईडी',
+  clientId: 'अनुप्रयोग (क्लाइंट) आईडी',
+  tenantHint: 'Entra ऐप पंजीकरण में है। बिल्ड NAS_SYNC_ENTRA_TENANT_ID भी सेट कर सकता है।',
+  clientHint: 'उसी ऐप की सार्वजनिक क्लाइंट आईडी। बिल्ड NAS_SYNC_ENTRA_CLIENT_ID भी सेट कर सकता है।',
+  nasNameKind: 'NAS को भेजा जाने वाला नाम',
+  nasNameUpn: 'Microsoft उपयोगकर्ता नाम (user@company)',
+  nasNameSam: 'Windows खाता नाम (sAMAccountName)',
+  nasNameHint: 'साइन-इन खाते से भरता है। आप दूसरा नाम लिख सकते हैं।',
+  useAccountName: 'Microsoft खाते का नाम उपयोग करें',
+  webdavAuth: 'WebDAV प्रमाणीकरण',
+  webdavBasic: 'उपयोगकर्ता नाम और पासवर्ड',
+  webdavBearer: 'OAuth वाहक टोकन',
+  webdavScope: 'टोकन का दायरा',
+  webdavScopeHint:
+    'केवल तभी भरें जब NAS Entra पहुँच टोकन स्वीकार करे। दायरा आईटी से पूछें। SMB और अधिकांश NAS अभी भी कीचेन का पासवर्ड उपयोग करते हैं।',
+  entraConfig: 'साइन इन से पहले टेनेंट आईडी और क्लाइंट आईडी लिखें।',
+  entraFailed: 'Microsoft साइन-इन पूरा नहीं हुआ।',
+  entraCancelled: 'साइन-इन रद्द किया गया।',
+  passwordStillNeeded:
+    'SMB और पासवर्ड वाले WebDAV के लिए NAS पासवर्ड कीचेन में होना चाहिए। Microsoft टोकन उन शेयरों पर नहीं भेजा जाता।',
 } satisfies NasCopy
 
 const zhTW = {
@@ -797,6 +1336,32 @@ const zhTW = {
   error: '同步需要處理',
   idle: '等待同步',
   offlineConflicts: 'NAS 離線 · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro: '選用。使用公司的 Microsoft 帳戶登入。不登入也可以同步 NAS。',
+  microsoftSignIn: '使用 Microsoft 登入',
+  microsoftSignOut: '登出',
+  microsoftName: '姓名',
+  microsoftEmail: '電子郵件',
+  tenantId: '目錄（租用戶）識別碼',
+  clientId: '應用程式（用戶端）識別碼',
+  tenantHint: '在 Entra 應用程式註冊中。封裝時也可以設定 NAS_SYNC_ENTRA_TENANT_ID。',
+  clientHint: '同一個應用程式的公開用戶端識別碼。封裝時也可以設定 NAS_SYNC_ENTRA_CLIENT_ID。',
+  nasNameKind: '送給 NAS 的使用者名稱',
+  nasNameUpn: 'Microsoft 使用者名稱（user@company）',
+  nasNameSam: 'Windows 帳戶名稱（sAMAccountName）',
+  nasNameHint: '從已登入的帳戶帶入。仍可改成其他名稱。',
+  useAccountName: '使用 Microsoft 帳戶名稱',
+  webdavAuth: 'WebDAV 驗證',
+  webdavBasic: '使用者名稱和密碼',
+  webdavBearer: 'OAuth 持有人權杖',
+  webdavScope: '權杖範圍',
+  webdavScopeHint:
+    '只有 NAS 接受 Entra 存取權杖時才填。範圍請詢問 IT。SMB 和多數 NAS 仍使用鑰匙圈中的密碼。',
+  entraConfig: '登入前請填入租用戶識別碼和用戶端識別碼。',
+  entraFailed: 'Microsoft 登入沒有完成。',
+  entraCancelled: '已取消登入。',
+  passwordStillNeeded:
+    'SMB 和以密碼登入的 WebDAV 仍要把 NAS 密碼放進鑰匙圈。Microsoft 權杖不會送到這些共用。',
 } satisfies NasCopy
 
 const vi = {
@@ -836,6 +1401,35 @@ const vi = {
   error: 'Đồng bộ cần được xem lại',
   idle: 'Đang chờ đồng bộ',
   offlineConflicts: 'NAS ngoại tuyến · {n}',
+  microsoftTitle: 'Microsoft 365',
+  microsoftIntro:
+    'Không bắt buộc. Đăng nhập bằng tài khoản Microsoft của công ty. Đồng bộ NAS vẫn chạy nếu bạn không đăng nhập.',
+  microsoftSignIn: 'Đăng nhập bằng Microsoft',
+  microsoftSignOut: 'Đăng xuất',
+  microsoftName: 'Tên',
+  microsoftEmail: 'Email',
+  tenantId: 'ID thư mục (thuê bao)',
+  clientId: 'ID ứng dụng (ứng dụng khách)',
+  tenantHint:
+    'Có trong phần đăng ký ứng dụng Entra. Bản dựng cũng có thể đặt NAS_SYNC_ENTRA_TENANT_ID.',
+  clientHint:
+    'ID máy khách công khai của cùng ứng dụng. Bản dựng cũng có thể đặt NAS_SYNC_ENTRA_CLIENT_ID.',
+  nasNameKind: 'Tên gửi tới NAS',
+  nasNameUpn: 'Tên người dùng Microsoft (user@company)',
+  nasNameSam: 'Tên tài khoản Windows (sAMAccountName)',
+  nasNameHint: 'Điền từ tài khoản đã đăng nhập. Bạn vẫn có thể gõ tên khác.',
+  useAccountName: 'Dùng tên tài khoản Microsoft',
+  webdavAuth: 'Xác thực WebDAV',
+  webdavBasic: 'Tên người dùng và mật khẩu',
+  webdavBearer: 'Mã thông báo mang OAuth',
+  webdavScope: 'Phạm vi mã thông báo',
+  webdavScopeHint:
+    'Chỉ điền khi NAS chấp nhận mã truy cập Entra. Hỏi IT về phạm vi. SMB và hầu hết NAS vẫn dùng mật khẩu trong Chuỗi khóa.',
+  entraConfig: 'Nhập ID thuê bao và ID máy khách trước khi đăng nhập.',
+  entraFailed: 'Đăng nhập Microsoft chưa xong.',
+  entraCancelled: 'Đã hủy đăng nhập.',
+  passwordStillNeeded:
+    'SMB và WebDAV bằng mật khẩu vẫn cần mật khẩu NAS trong Chuỗi khóa. Mã thông báo Microsoft không được gửi tới các chia sẻ đó.',
 } satisfies NasCopy
 
 export const NAS_STRINGS: Record<Lang, NasCopy> = {

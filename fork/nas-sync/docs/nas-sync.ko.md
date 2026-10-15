@@ -80,3 +80,70 @@ NAS 인증서를 macOS가 믿지 않을 때만 **이 NAS 인증서 신뢰**를 �
 256MB보다 큰 파일은 그대로 두고, 상태에 확인이 필요하다고 나옵니다.
 
 크기와 수정 시각이 마지막 동기화와 같으면 그 파일은 다시 읽지 않습니다.
+
+## Microsoft 365 로그인 (선택)
+
+NAS에 따로 만든 계정이 있으면 이 단계를 건너뛰어도 됩니다. 로그인하지 않아도 동기화는 됩니다.
+
+회사 NAS 계정이 Microsoft 365 / Entra ID 계정과 같을 때 씁니다. NAS 기종은 앱이 맞추지 않습니다.
+
+앱이 하는 일:
+
+- 공개 클라이언트입니다. 인증 코드와 PKCE를 씁니다. 클라이언트 비밀은 없습니다.
+- 시스템 브라우저로 Microsoft 로그인 페이지를 엽니다. 답은 `http://localhost` 의 빈 포트로 돌아옵니다.
+- 이름과 메일에 필요한 범위는 Microsoft Graph `User.Read` 뿐입니다.
+- 토큰은 macOS 키체인(`safeStorage`)에 봉인합니다. `settings.json`에는 적지 않습니다.
+- 설정과 홈 옆줄에 로그인한 이름과 메일이 나옵니다.
+- NAS 사용자 이름은 UPN(`ada@contoso.com`)으로 채웁니다. **Windows 계정 이름**을 고르면 `sAMAccountName`을 씁니다. 그 값이 없으면 `@` 앞부분을 씁니다. 충돌 파일 이름도 그 이름을 씁니다.
+- 다른 NAS 이름을 직접 적으면 그 이름을 유지합니다.
+- 로그아웃은 이 Mac의 토큰 저장만 지웁니다. NAS 암호는 지우지 않습니다. 브라우저의 Microsoft 세션은 남을 수 있습니다.
+
+### IT가 Entra에 등록할 것
+
+1. Microsoft Entra 관리 센터에서 **앱 등록**을 새로 만듭니다.
+2. 계정 종류는 이 조직만으로 두는 것이 보통입니다. 테넌트 값은 조직(`organizations`) 또는 테넌트 GUID입니다.
+3. 리디렉션 URI 플랫폼은 **모바일 및 데스크톱 애플리케이션**이고, URI는 `http://localhost` 입니다. 포트는 로그인할 때 정해집니다. URI에 암호를 넣지 않습니다.
+4. **애플리케이션(클라이언트) ID**와 **디렉터리(테넌트) ID**를 설정에 붙여 넣습니다. 설치 파일을 만들 때 `NAS_SYNC_ENTRA_TENANT_ID`와 `NAS_SYNC_ENTRA_CLIENT_ID`로 기본값을 넣을 수도 있습니다. 설정에 적은 값이 우선입니다.
+5. 공개 클라이언트 흐름을 켭니다. 클라이언트 비밀은 만들지 않습니다.
+6. API 사용 권한은 Microsoft Graph 위임 `User.Read` 입니다. 테넌트가 요구하면 관리자 동의를 줍니다.
+
+### 암호와 토큰
+
+SMB와 대부분의 WebDAV는 Entra 액세스 토큰을 받지 않습니다.
+
+**(a) 디렉터리 사용자 이름과 암호.** NAS가 같은 계정에 가입되어 있을 때의 경로입니다.
+
+- 사용자 이름: 이미 채워진 UPN 또는 sAMAccountName.
+- 암호: 디렉터리 암호를 앱에 한 번 입력합니다. macOS 키체인에 저장되고, WebDAV 기본 인증으로만 보내집니다.
+- Microsoft 암호 자체는 앱에 들어오지 않습니다. 브라우저가 받습니다.
+- 이 Mac의 SMB는 마운트된 폴더입니다. 앱은 `smb://` 주소에 암호를 넣지 않습니다. macOS가 물을 때 같은 사용자 이름을 씁니다. macOS는 그 암호를 로그인 키체인에 넣을 수 있습니다.
+
+**(b) OAuth 전달자 토큰.** NAS의 WebDAV가 그 토큰을 받을 때만 켭니다.
+
+- **WebDAV 인증**을 **OAuth 전달자 토큰**으로 두고, IT가 알려 준 범위를 적습니다.
+- 앱은 그 범위의 액세스 토큰을 조용히 받아, 설정에 적은 WebDAV 주소에만 `Authorization: Bearer ...` 를 보냅니다.
+- 바꾸는 자리는 `src/entra/bearer.ts`의 `WebdavBearerHook` 입니다. 기본 구현은 그 MSAL 토큰입니다. 다른 토큰이 필요하면 `authorizationFromHook`에 다른 훅을 넘깁니다.
+- SMB는 이 토큰을 쓸 수 없습니다.
+
+### Synology, QNAP, 그 밖의 NAS를 같은 계정에 붙이기
+
+목표는 같은 UPN 또는 sAMAccountName과 같은 디렉터리 암호로 공유를 여는 것입니다.
+
+**Synology**
+
+- 제어판의 **도메인/LDAP**(또는 **도메인**).
+- Azure AD Domain Services(Entra Domain Services): NAS를 그 관리형 도메인에 가입합니다. 사용자는 그 도메인의 UPN 또는 sAMAccountName으로 로그인합니다.
+- LDAP: 회사가 LDAP를 제공하면(Azure AD DS 보안 LDAP, 또는 Entra를 비추는 다른 디렉터리) Synology를 그 LDAP 서버에 묶습니다.
+- Synology SMB는 Entra 토큰 자체를 받지 않습니다.
+
+**QNAP**
+
+- 제어판, **권한**, **도메인 보안**(QTS 버전에 따라 메뉴 이름이 다릅니다).
+- Azure AD DS 관리형 도메인에 가입하거나, Entra와 동기화된 Active Directory 도메인에 가입합니다.
+- LDAP는 같은 화면에서 회사 LDAP 주소를 씁니다.
+- 그 다음 QNAP SMB와 일반 WebDAV는 그 디렉터리 계정을 씁니다.
+
+**그 밖의 NAS**
+
+- Active Directory, Azure AD Domain Services, 또는 회사 LDAP에 가입합니다.
+- 앱에서 동기화를 켜기 전에, 그 사람이 UPN 또는 sAMAccountName과 디렉터리 암호로 공유를 열 수 있는지 확인합니다.
