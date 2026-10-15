@@ -44,6 +44,7 @@ import { ProviderLogo } from './provider-logos'
 import { IntegrationsPane, skillUpdateDue } from './IntegrationsPane'
 import { AiSection, SubscriptionSummary } from './SettingsAiSection'
 import { ResultStoreField } from './SettingsResultStore'
+import CompanyTemplateSettings from '../../../../../fork/company-templates/ui/Settings'
 import { useSubscriptionConnection } from './subscription-client'
 import {
   advancedProviderIds,
@@ -1814,6 +1815,7 @@ export function SettingsModal({
                   />
                 </div>
                 <ResultStoreField />
+                <CompanyTemplateSettings lang={lang} />
               </>
             )}
             {section === 'integrations' && (

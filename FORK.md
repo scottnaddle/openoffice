@@ -11,6 +11,12 @@ This repository is a fork of [pblsketch/openoffice](https://github.com/pblsketch
 
 `fork/nas-sync/` is the company NAS sync feature. It is not part of upstream.
 
+`fork/company-templates/` is the company document template library. It is not part of upstream. The templates folder is a path on this PC. A later NAS sync can point that path at a folder inside the synced workspace. This feature does not import the NAS sync code.
+
+## Company templates
+
+See the Korean section below, and the user notes in `README.md`.
+
 ## Upstream sync
 
 `.github/workflows/upstream-sync.yml` runs every day (`17 6 * * *` UTC) and when someone starts it by hand (`workflow_dispatch`).
@@ -37,6 +43,42 @@ The script is `.github/scripts/upstream-sync.mjs`. `npm run test:upstream-sync` 
 - 구독 로그인 파일은 읽지 않는다. 암호가 필요하면 macOS 키체인에 넣고, 설정 파일에 평문으로 적지 않는다.
 
 `fork/nas-sync/` 는 회사 NAS 동기화다. 업스트림에 없다.
+
+`fork/company-templates/` 는 회사 문서 양식이다. 업스트림에 없다. 양식 폴더는 이 PC의 경로다. 나중에 NAS 동기화가 생기면 그 경로를 동기화되는 작업 폴더 안으로 가리키면 된다. 이 기능은 NAS 동기화 코드를 불러오지 않는다.
+
+## 회사 문서 양식 넣기
+
+설정 → 일반 → 회사 문서 양식에서 폴더를 고른다. 그 폴더가 NAS에 올라가는 폴더여도 된다. 연결이 잠시 끊겨 있으면 목록만 비고, 경로는 지워지지 않는다.
+
+양식 파일 옆에 같은 이름의 JSON을 두면 이름, 분류, 설명을 읽는다.
+
+```json
+{
+  "name": "월간 업무 보고서",
+  "category": "보고서",
+  "description": "실적과 다음 계획"
+}
+```
+
+분류 값은 `report`, `draft`, `minutes`, `quote`, `official`, `slides`, `other` 이거나 `보고서`, `기안문`, `회의록`, `견적서`, `공문`, `발표자료`, `기타` 다. JSON이 없으면 상위 폴더 이름을 분류로 쓴다.
+
+마크다운, 텍스트, HTML은 파일 맨 위의 머리말로 같은 값을 적을 수 있다.
+
+```markdown
+---
+name: 회의 메모
+category: minutes
+description: 안건과 결정
+---
+```
+
+자리표시자는 `{{날짜}}`, `{{작성자}}`, `{{부서}}`, `{{회사명}}` 이다. 문서를 만들 때 바꾼다. 날짜와 설정에 저장한 이름, 부서, 회사가 미리 채워진다. 설정 파일은 사용자 데이터 폴더의 `company-templates.json` 이고, 암호는 들어 있지 않다.
+
+미리보기는 `양식.docx.thumb.svg` 또는 `양식.docx.thumb.png` 다. 없으면 앱이 간단한 그림을 그린다.
+
+파일 메뉴의 양식으로 저장은 디스크에 있는 현재 문서를 그 폴더의 분류 하위 폴더로 복사하고, 옆 JSON을 만든다. 이진 `.hwp` 안의 글자는 바꾸지 않고 파일만 복사한다.
+
+앱에 들어 있는 기본 양식(보고서, 회의록, 기안문, 견적서, 공문, 발표자료)은 `fork/company-templates/src/builtin.ts` 에서 만든다. 기안문 HWPX 바이트는 `scripts/build-draft-hwpx.mjs` 가 `src/draft-hwpx.ts` 에 적는다.
 
 ## 업스트림 동기화
 

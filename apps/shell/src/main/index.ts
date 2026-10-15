@@ -87,6 +87,12 @@ import { registerResultStoreIpc } from './result-store-ipc'
 import { handleDroppedFiles } from './dropped-files'
 import { collectLaunchPaths } from './launch-paths'
 import { installMacGuiPath } from './gui-path'
+import {
+  companyTemplateFileMenuItem,
+  startForkCompanyTemplates,
+  stopForkCompanyTemplates,
+  templateSaveLabel,
+} from '../../../../fork/company-templates/src/electron/host'
 
 import {
   buildDocsMenu,
@@ -5122,6 +5128,7 @@ function buildHomeMenu(): void {
           click: () => void openFileViaDialog(),
         },
         { type: 'separator' },
+        companyTemplateMenuEntry(),
         { role: 'close', label: tm('menuClose') },
       ],
     },
@@ -5213,6 +5220,7 @@ function buildPdfMenu(): void {
           },
         },
         { type: 'separator' },
+        companyTemplateMenuEntry(),
         {
           label: tm('menuClose'),
           accelerator: 'CmdOrCtrl+W',
@@ -5313,6 +5321,7 @@ function buildMarkdownMenu(): void {
           },
         },
         { type: 'separator' },
+        companyTemplateMenuEntry(),
         {
           label: tm('menuClose'),
           accelerator: 'CmdOrCtrl+W',
@@ -5391,6 +5400,7 @@ function buildHwpMenu(): void {
           },
         },
         { type: 'separator' },
+        companyTemplateMenuEntry(),
         {
           label: tm('menuClose'),
           accelerator: 'CmdOrCtrl+W',
@@ -5484,6 +5494,7 @@ function buildHtmlMenu(): void {
           },
         },
         { type: 'separator' },
+        companyTemplateMenuEntry(),
         {
           label: tm('menuClose'),
           accelerator: 'CmdOrCtrl+W',
@@ -5583,6 +5594,7 @@ function buildMindmapMenu(): void {
           },
         },
         { type: 'separator' },
+        companyTemplateMenuEntry(),
         {
           label: tm('menuClose'),
           accelerator: 'CmdOrCtrl+W',
@@ -6065,6 +6077,10 @@ function openThirdPartyNotices(): Promise<string> {
   return shell.openPath(path)
 }
 
+function companyTemplateMenuEntry(): MenuItemConstructorOptions {
+  return companyTemplateFileMenuItem(templateSaveLabel(currentLang()))
+}
+
 /** every module's File menu gets a way back to the launcher */
 function installBackToHomeItems(): void {
   const backToHomeItem: MenuItemConstructorOptions = {
@@ -6072,9 +6088,10 @@ function installBackToHomeItems(): void {
     accelerator: 'Shift+CmdOrCtrl+H',
     click: () => tabManager?.openHomeTab(),
   }
-  setDocsExtraFileMenuItems([backToHomeItem])
-  setSheetsExtraFileMenuItems([backToHomeItem])
-  setSlidesExtraFileMenuItems([backToHomeItem])
+  const templateItem = companyTemplateMenuEntry()
+  setDocsExtraFileMenuItems([backToHomeItem, templateItem])
+  setSheetsExtraFileMenuItems([backToHomeItem, templateItem])
+  setSlidesExtraFileMenuItems([backToHomeItem, templateItem])
 }
 
 /** the editors that build their own menus show the same provenance entries (spec 8.2, 9) */
@@ -6517,6 +6534,45 @@ app.whenReady().then(async () => {
     console.error('[mcp] failed to start on boot:', error)
   })
   createShellWindow()
+  startForkCompanyTemplates({
+    userData: app.getPath('userData'),
+    documentsDir: () => defaultSaveDir(),
+    dirAllowed: (dir) => {
+      try {
+        return existsSync(dir) && statSync(dir).isDirectory() && insideAnyRoot(dir)
+      } catch {
+        return false
+      }
+    },
+    openPath: (filePath) => {
+      revealShellWindow()
+      openDocumentPath(filePath)
+    },
+    listDocuments: async () => {
+      const tabs = [
+        ...(tabManager ? await tabManager.openDocuments() : []),
+        ...(await detachedOpenDocuments()),
+      ]
+      return tabs.flatMap((tab) =>
+        tab.filePath
+          ? [{ path: tab.filePath, title: tab.title, active: tab.active, dirty: tab.dirty }]
+          : [],
+      )
+    },
+    pickDirectory: async () => {
+      const result = await dialog.showOpenDialog({
+        properties: ['openDirectory', 'createDirectory'],
+      })
+      return result.canceled ? null : (result.filePaths[0] ?? null)
+    },
+    notifyHome: (channel) => {
+      if (shellWindow && !shellWindow.isDestroyed()) shellWindow.webContents.send(channel)
+    },
+    openHome: () => {
+      revealShellWindow()
+      tabManager?.openHomeTab()
+    },
+  })
   // deferred to ready: labels need currentLang(), which reads app.getLocale()
   installBackToHomeItems()
   installDocumentLinkMenuItems()
@@ -6583,6 +6639,7 @@ app.on('before-quit', () => {
 
 // after every window has closed, so the shell window's own 'closed' republish cannot revive the file
 app.on('will-quit', () => {
+  stopForkCompanyTemplates()
   fileIndexer?.stop()
   fileIndexStore?.close()
   for (const watcher of folderWatchers.values()) watcher.close()

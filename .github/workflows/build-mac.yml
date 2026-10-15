@@ -6,6 +6,10 @@ name: macOS arm64
 
 on:
   workflow_dispatch:
+  # Temporary: prove this branch still packages an arm64 dmg. Remove after the run.
+  push:
+    branches:
+      - cursor/company-templates-mac-build-5e0f
 
 permissions:
   contents: read
