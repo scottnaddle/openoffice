@@ -35,6 +35,7 @@ import { productName } from '@genoffice/i18n'
 import { RELEASE_IS_BETA } from '../../shared/release-stage'
 import { fileCountLabel, visiblePageCount } from './counts'
 import { useI18n } from './locale'
+import CompanyTemplateGallery from '../../../../../fork/company-templates/ui/Gallery'
 import type { I18n, StringKey } from './locale'
 import {
   generateEntryLabel,
@@ -860,6 +861,11 @@ function AccountEntry({
   useEffect(() => {
     if (openRequest) openSettings(openRequest)
   }, [openRequest, openSettings])
+  useEffect(() => {
+    const onOpen = () => openSettings({ section: 'general' })
+    window.addEventListener('ieum-open-template-settings', onOpen)
+    return () => window.removeEventListener('ieum-open-template-settings', onOpen)
+  }, [openSettings])
 
   const { refresh } = connection
   const closeSettings = () => {
@@ -2713,6 +2719,7 @@ export function Home({
             <span className="section-label">{t('secQuickStart')}</span>
           </div>
           {renderQuickCards()}
+          <CompanyTemplateGallery lang={lang} targetDir={newFileOpts?.dir} />
         </section>
 
         <section className="recents" aria-label={t('folders')}>
@@ -2838,6 +2845,7 @@ export function Home({
             </h1>
           </div>
           {renderQuickCards()}
+          <CompanyTemplateGallery lang={lang} targetDir={newFileOpts?.dir} />
         </section>
 
         <section

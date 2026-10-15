@@ -18,6 +18,7 @@ IeumOffice is a modified version of the open-source project
 ## Contents
 
 - [What works today](#what-works-today)
+- [Company document templates](#company-document-templates)
 - [Connecting your subscription](#connecting-your-subscription)
 - [Using it for free, without a subscription](#using-it-for-free-without-a-subscription)
 - [What the app never does with your login](#what-the-app-never-does-with-your-login)
@@ -63,6 +64,42 @@ IeumOffice is a modified version of the open-source project
   other 19 are machine translations.
 
 Released and verified on **Windows only**.
+
+## Company document templates
+
+The home screen has **New from template**. It lists the templates shipped with the app and any templates in a company folder you choose. Categories are reports, drafts, minutes, quotes, official letters and presentations. You can search.
+
+Shipped templates cover a monthly report, meeting minutes and an official letter (Word), a quote (Excel), a presentation (PowerPoint) and a draft (HWPX). Placeholders such as `{{날짜}}`, `{{작성자}}`, `{{부서}}` and `{{회사명}}` are filled in a small form. The date and a saved name, department and company are filled in first.
+
+The company folder is a path on this PC, set under Settings, General, Company document templates. Point it at a folder that a NAS sync keeps up to date when you have one. If that folder is offline, the shipped templates stay available and the path is kept. The list refreshes when files change.
+
+To add a company template:
+
+1. Make a subfolder named `보고서`, `기안문`, `회의록`, `견적서`, `공문`, `발표자료` or `기타`.
+2. Put a `.docx`, `.xlsx`, `.pptx`, `.hwpx`, `.hwp`, `.md`, `.txt` or `.html` file in it.
+3. Optional sidecar `filename.docx.json`:
+
+```json
+{
+  "name": "Monthly report",
+  "category": "report",
+  "description": "Results and next month"
+}
+```
+
+`category` is `report`, `draft`, `minutes`, `quote`, `official`, `slides`, `other`, or the Korean folder name. Markdown, text and HTML may use front matter instead:
+
+```markdown
+---
+name: Meeting notes
+category: minutes
+description: Agenda and decisions
+---
+```
+
+A sibling `filename.docx.thumb.svg` or `filename.docx.thumb.png` is used as the preview. Otherwise the app draws a simple card.
+
+File, Save as template copies the document that is already on disk into the company folder. Edits that exist only in the editor are not included. A binary `.hwp` file is copied as-is; placeholders inside it are not rewritten.
 
 ## Connecting your subscription
 
