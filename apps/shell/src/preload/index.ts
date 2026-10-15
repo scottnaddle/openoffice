@@ -1,4 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
+import { TEMPLATE_CHANNELS } from '../../../../fork/company-templates/src/channels'
+import type { CompanyTemplatesApi } from '../../../../fork/company-templates/src/public'
 import type { IpcRendererEvent } from 'electron'
 import {
   AI_MEDIA_PROVIDERS,
@@ -735,6 +737,28 @@ const generateHomeApi: GenerateHomeApi = {
   },
 }
 contextBridge.exposeInMainWorld('aiOfficeGenerate', generateHomeApi)
+
+const ieumTemplatesApi: CompanyTemplatesApi = {
+  list: () => ipcRenderer.invoke(TEMPLATE_CHANNELS.list),
+  settings: () => ipcRenderer.invoke(TEMPLATE_CHANNELS.settings),
+  saveSettings: (input) => ipcRenderer.invoke(TEMPLATE_CHANNELS.saveSettings, input),
+  pickFolder: () => ipcRenderer.invoke(TEMPLATE_CHANNELS.pickFolder),
+  create: (input) => ipcRenderer.invoke(TEMPLATE_CHANNELS.create, input),
+  save: (input) => ipcRenderer.invoke(TEMPLATE_CHANNELS.save, input),
+  documents: () => ipcRenderer.invoke(TEMPLATE_CHANNELS.documents),
+  refresh: () => ipcRenderer.invoke(TEMPLATE_CHANNELS.refresh),
+  onChanged(listener) {
+    const wrapped = () => listener()
+    ipcRenderer.on(TEMPLATE_CHANNELS.changed, wrapped)
+    return () => ipcRenderer.removeListener(TEMPLATE_CHANNELS.changed, wrapped)
+  },
+  onPromptSave(listener) {
+    const wrapped = () => listener()
+    ipcRenderer.on(TEMPLATE_CHANNELS.promptSave, wrapped)
+    return () => ipcRenderer.removeListener(TEMPLATE_CHANNELS.promptSave, wrapped)
+  },
+}
+contextBridge.exposeInMainWorld('ieumTemplates', ieumTemplatesApi)
 
 // open documents dragged from the OS anywhere over Home or the tab strip
 installDropOpenBridge()
