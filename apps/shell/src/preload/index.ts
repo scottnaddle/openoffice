@@ -36,6 +36,8 @@ import type {
   SkillInstallState,
 } from '../shared/integrations-api'
 import { RESULT_STORE_CHANNELS } from '../shared/result-store-api'
+import { NAS_SYNC_CHANNELS } from '../../../../fork/nas-sync/src/channels'
+import type { NasSyncApi, NasSyncSnapshot } from '../../../../fork/nas-sync/src/public'
 import type { ResultStoreApi } from '../shared/result-store-api'
 import type { TabsApi, TabSummary } from '../shared/tabs-api'
 import { TABS_CHANNELS } from '../shared/tabs-api'
@@ -603,6 +605,27 @@ const resultStoreApi: ResultStoreApi = {
   },
 }
 contextBridge.exposeInMainWorld('aiOfficeResultStore', resultStoreApi)
+
+const nasSyncApi: NasSyncApi = {
+  get: () => ipcRenderer.invoke(NAS_SYNC_CHANNELS.get) as Promise<NasSyncSnapshot>,
+  save: (input) => ipcRenderer.invoke(NAS_SYNC_CHANNELS.save, input),
+  syncNow: () => ipcRenderer.invoke(NAS_SYNC_CHANNELS.syncNow) as Promise<NasSyncSnapshot>,
+  async pickWorkspace() {
+    const picked: unknown = await ipcRenderer.invoke(NAS_SYNC_CHANNELS.pickWorkspace)
+    return typeof picked === 'string' ? picked : null
+  },
+  signIn: () => ipcRenderer.invoke(NAS_SYNC_CHANNELS.signIn),
+  signOut: () => ipcRenderer.invoke(NAS_SYNC_CHANNELS.signOut) as Promise<NasSyncSnapshot>,
+  notifyNetwork(online) {
+    ipcRenderer.send(NAS_SYNC_CHANNELS.network, online)
+  },
+  onStatus(listener) {
+    const wrapped = (_event: IpcRendererEvent, snapshot: NasSyncSnapshot) => listener(snapshot)
+    ipcRenderer.on(NAS_SYNC_CHANNELS.status, wrapped)
+    return () => ipcRenderer.removeListener(NAS_SYNC_CHANNELS.status, wrapped)
+  },
+}
+contextBridge.exposeInMainWorld('ieumNasSync', nasSyncApi)
 
 // Subscription channels are registered once for the whole app by the docs main.
 // Until that handler exists an invoke rejects; the renderer reads that as

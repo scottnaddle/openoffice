@@ -7,6 +7,16 @@ export default defineConfig({
   // imported docs/sheets main modules are TS source with no build artifacts,
   // so externalizing them would break Node ESM resolution at runtime.
   main: {
+    // Baked in at package time. Empty unless the packager set them.
+    // Fork-only. Settings in the app override these.
+    define: {
+      'process.env.NAS_SYNC_ENTRA_TENANT_ID': JSON.stringify(
+        process.env.NAS_SYNC_ENTRA_TENANT_ID ?? '',
+      ),
+      'process.env.NAS_SYNC_ENTRA_CLIENT_ID': JSON.stringify(
+        process.env.NAS_SYNC_ENTRA_CLIENT_ID ?? '',
+      ),
+    },
     // node:sqlite is a Node 22+ builtin the bundler's builtin list may predate
     build: { rollupOptions: { external: ['node:sqlite'] } },
   },

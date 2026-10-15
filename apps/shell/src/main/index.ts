@@ -84,6 +84,7 @@ import { installCliLinkBestEffort } from './cli-link'
 import { createDefaultAppService, execFileRunner } from './default-app'
 import { registerIntegrationsIpc } from './integrations-ipc'
 import { registerResultStoreIpc } from './result-store-ipc'
+import { startForkNasSync, stopForkNasSync } from '../../../../fork/nas-sync/src/electron/host'
 import { handleDroppedFiles } from './dropped-files'
 import { collectLaunchPaths } from './launch-paths'
 import { installMacGuiPath } from './gui-path'
@@ -6517,6 +6518,13 @@ app.whenReady().then(async () => {
     console.error('[mcp] failed to start on boot:', error)
   })
   createShellWindow()
+  // Fork-only: company NAS sync. Headless export returned above, so this
+  // process is the windowed app. The scheduler stops in will-quit.
+  startForkNasSync({
+    userData: app.getPath('userData'),
+    documentsDir: app.getPath('documents'),
+    getWindow: () => shellWindow,
+  })
   // deferred to ready: labels need currentLang(), which reads app.getLocale()
   installBackToHomeItems()
   installDocumentLinkMenuItems()
@@ -6583,6 +6591,7 @@ app.on('before-quit', () => {
 
 // after every window has closed, so the shell window's own 'closed' republish cannot revive the file
 app.on('will-quit', () => {
+  stopForkNasSync()
   fileIndexer?.stop()
   fileIndexStore?.close()
   for (const watcher of folderWatchers.values()) watcher.close()

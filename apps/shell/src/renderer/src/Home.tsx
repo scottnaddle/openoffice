@@ -42,6 +42,7 @@ import {
   openGenerateWithPaths,
 } from './generate/home-entry'
 import { SettingsModal } from './SettingsModal'
+import { NasSyncStatus } from '../../../../../fork/nas-sync/ui/NasSyncStatus'
 import type { SettingsTarget } from './SettingsModal'
 import { skillUpdateDue } from './IntegrationsPane'
 import { onFilesChanged } from './file-events'
@@ -3073,6 +3074,7 @@ export function Home({
         </nav>
         <div className="sidebar-divider" />
         {renderFolderPanel()}
+        <NasSyncStatus lang={lang} />
         <AccountEntry
           connection={connection}
           onOpenChange={handleSettingsOpenChange}
